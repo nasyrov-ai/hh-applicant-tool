@@ -64,6 +64,16 @@ def postprocess_letter(text: str) -> str:
     if not text:
         return ""
     text = text.strip()
+    # Убираем мета-преамбулы AI ("Вот вариант:", "Конечно, вот ответ:" и т.п.)
+    text = re.sub(
+        r"^(Вот|Конечно|Хорошо|Да,? конечно)[^.!?\n]*?:\s*\n+",
+        "", text, flags=re.IGNORECASE
+    )
+    # Убираем завершающие мета-вопросы ("Отправить?", "Подойдёт?")
+    text = re.sub(
+        r"\n+(Отправить|Подойд[её]т|Устроит|Нормально|Годится)\?\s*$",
+        "", text, flags=re.IGNORECASE
+    )
     # Убираем обрамляющие кавычки
     if (text.startswith('"') and text.endswith('"')) or \
        (text.startswith('«') and text.endswith('»')):
