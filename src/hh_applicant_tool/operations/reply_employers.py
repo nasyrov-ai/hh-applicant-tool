@@ -12,7 +12,7 @@ from ..main import BaseNamespace, BaseOperation
 from ..utils.date import parse_api_datetime
 from ..utils.sanitize import postprocess_letter, sanitize_vacancy_text
 from ..utils.string import rand_text, validate_ai_message
-from ..utils.telegram import notify_ai_rejected
+from ..utils.telegram import notify_ai_rejected, ask_review
 
 if TYPE_CHECKING:
     from ..main import HHApplicantTool
@@ -105,7 +105,10 @@ class Operation(BaseOperation):
                 "Пиши ТОЛЬКО готовое сообщение. "
                 "ЗАПРЕЩЕНО: мета-комментарии, варианты, вопросы типа 'Отправить?', "
                 "преамбулы типа 'Вот вариант:', рассуждения, пояснения. "
-                "Отвечай кратко, по-человечески, 1-3 предложения."
+                "Отвечай кратко, по-человечески, 1-3 предложения.\n"
+                "Если ситуация сложная (работодатель задаёт конкретные вопросы про опыт, "
+                "зарплату, тестовое задание, или предлагает что-то необычное), "
+                "начни ответ СТРОГО с 'NEED_REVIEW:' и на следующей строке напиши свой вариант ответа."
             ),
         )
         parser.add_argument(
@@ -376,6 +379,25 @@ class Operation(BaseOperation):
                                     "AI решил не отвечать в чат %s (NO_REPLY)", nid
                                 )
                                 continue
+
+                            # AI не уверен — спросить пользователя в Telegram
+                            if send_message.startswith("NEED_REVIEW:"):
+                                draft = send_message.split("\n", 1)[-1].strip()
+                                draft = postprocess_letter(draft)
+                                logger.info(
+                                    "AI запросил ревью для чата %s", nid
+                                )
+                                reviewed = ask_review(
+                                    employer_name=placeholders["employer_name"],
+                                    vacancy_name=placeholders["vacancy_name"],
+                                    vacancy_url=vacancy.get("alternate_url", ""),
+                                    last_messages=message_history[-3:],
+                                    ai_draft=draft,
+                                )
+                                if reviewed is None:
+                                    logger.info("Пользователь пропустил чат %s", nid)
+                                    continue
+                                send_message = reviewed
 
                             # Валидация: не отправляем бред работодателю
                             problem = validate_ai_message(send_message, min_len=10)
