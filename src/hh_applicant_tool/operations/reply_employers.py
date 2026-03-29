@@ -12,7 +12,7 @@ from ..main import BaseNamespace, BaseOperation
 from ..utils.date import parse_api_datetime
 from ..utils.sanitize import postprocess_letter, sanitize_vacancy_text
 from ..utils.string import rand_text, validate_ai_message
-from ..utils.telegram import notify_reply_sent, notify_ai_rejected
+from ..utils.telegram import notify_ai_rejected
 
 if TYPE_CHECKING:
     from ..main import HHApplicantTool
@@ -473,12 +473,6 @@ class Operation(BaseOperation):
                         delay=random.uniform(1, 3),
                     )
                     logger.info("Отправлено для %s", vacancy["alternate_url"])
-                    notify_reply_sent(
-                        employer_name=placeholders["employer_name"],
-                        vacancy_name=placeholders["vacancy_name"],
-                        message=send_message,
-                        vacancy_url=vacancy.get("alternate_url", ""),
-                    )
 
             except ApiError as ex:
                 logger.error(ex)
