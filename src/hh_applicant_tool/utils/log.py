@@ -47,11 +47,11 @@ class ColorHandler(logging.StreamHandler):
         # Обязательно нужно восстановить оригинальное значение или в файловом
         # логе не будет деталей ошибки
         record.exc_info = orig_exc_info
-        # isatty = getattr(self.stream, "isatty", None)
-        # if isatty and isatty():
-        color_code = self._color_map[record.levelname]
-        return f"\033[{color_code}m{message}\033[0m"
-        # return message
+        isatty = getattr(self.stream, "isatty", None)
+        if isatty and isatty():
+            color_code = self._color_map[record.levelname]
+            return f"\033[{color_code}m{message}\033[0m"
+        return message
 
 
 class RedactingFilter(logging.Filter):

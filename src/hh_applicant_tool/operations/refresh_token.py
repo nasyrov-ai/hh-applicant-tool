@@ -29,10 +29,9 @@ class Operation(BaseOperation):
         if tool.api_client.is_access_expired:
             tool.api_client.refresh_access_token()
             if not tool.save_token():
-                print("⚠️ Токен не был обновлен!")
+                logger.warning("Токен не был обновлен!")
                 return 1
-            print("✅ Токен успешно обновлен.")
+            logger.info("Токен успешно обновлен.")
         else:
-            # logger.debug("Токен валиден, игнорируем обновление.")
-            print("ℹ️ Токен не истек, обновление не требуется.")
+            logger.info("Токен не истек, обновление не требуется.")
             return 2

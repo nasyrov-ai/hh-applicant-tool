@@ -46,9 +46,9 @@ class JSONCParser:
             not in [TokenType.COMMENT, TokenType.WHITESPACE],
             tokenize(s),
         )
-        self.token: Token
-        self.next_token: Token | None = None
-        self.advance()
+        self.token: Token = Token(TokenType.EOF, "")
+        self.next_token: Token = next(self.token_it, Token(TokenType.EOF, ""))
+        # No advance() here — next_token is the first real token (lookahead)
         result = self.parse_value()
         self.expect(TokenType.EOF)
         return result
@@ -56,6 +56,9 @@ class JSONCParser:
     def parse_object(self) -> dict:
         # obj = OrderedDict()
         obj = {}
+
+        if self.match(TokenType.CLOSE_CURLY):
+            return obj
 
         while True:
             self.expect(TokenType.STRING)
@@ -71,6 +74,9 @@ class JSONCParser:
 
     def parse_array(self) -> list:
         arr = []
+
+        if self.match(TokenType.CLOSE_SQUARE):
+            return arr
 
         while True:
             arr.append(self.parse_value())

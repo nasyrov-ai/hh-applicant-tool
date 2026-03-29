@@ -123,7 +123,7 @@ class BaseModel:
                     continue
 
                 if f.metadata.get("store_json"):
-                    value = json.loads(value)
+                    value = json.loads(value) if value is not None else None
                 else:
                     value = cls._coerce_type(value, f)
 

@@ -64,16 +64,21 @@ class Operation(BaseOperation):
                     if tool.args.csv or tool.args.output:
                         # Если -o не задан, используем sys.stdout
                         output = (
-                            tool.args.output.open("w", charset="utf-8")
+                            tool.args.output.open("w", encoding="utf-8")
                             if tool.args.output
                             else sys.stdout
                         )
-                        writer = csv.writer(output)
-                        writer.writerow(columns)
-                        writer.writerows(cursor.fetchall())
+                        try:
+                            writer = csv.writer(output)
+                            writer.writerow(columns)
+                            for row in cursor:
+                                writer.writerow(row)
+                        finally:
+                            if output is not sys.stdout:
+                                output.close()
 
-                        if output is not sys.stdout:
-                            print(f"✅  Exported to {output.name}")
+                        if tool.args.output:
+                            print(f"✅  Exported to {tool.args.output}")
                         return
 
                     rows = cursor.fetchmany(MAX_RESULTS + 1)

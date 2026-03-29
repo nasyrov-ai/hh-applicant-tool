@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hh-applicant-tool — Автоматический движок откликов для hh.ru</title>
+  <meta name="description" content="Self-hosted платформа с AI-сопроводительными письмами, real-time дашбордом и удалённым worker для автоматических откликов на hh.ru">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================================
+       hh-applicant-tool Landing
+       Dark theme, Space Grotesk, Aurora + Glass
+       ============================================================ */
+
+    :root {
+      --bg: #06060b;
+      --bg-card: rgba(255, 255, 255, 0.03);
+      --bg-elevated: rgba(255, 255, 255, 0.05);
+      --text: #e8e8ed;
+      --text-muted: #6b6b80;
+      --accent: #7B2FF7;
+      --accent-cyan: #00D4FF;
+      --accent-green: #22c55e;
+      --accent-orange: #f59e0b;
+      --accent-blue: #3b82f6;
+      --accent-pink: #ec4899;
+      --border: rgba(255, 255, 255, 0.08);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --font: 'Space Grotesk', system-ui, sans-serif;
+      --mono: 'IBM Plex Mono', 'SF Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; height: auto; display: block; }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ---- Noise Overlay ---- */
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    }
+
+    /* ---- Custom Cursor ---- */
+    .cursor {
+      position: fixed;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      pointer-events: none;
+      z-index: 10000;
+      mix-blend-mode: screen;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s, height 0.3s, background 0.3s;
+    }
+    .cursor.hover {
+      width: 40px;
+      height: 40px;
+      background: rgba(123, 47, 247, 0.3);
+      border: 1px solid rgba(123, 47, 247, 0.5);
+    }
+    .cursor-trail {
+      position: fixed;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid rgba(123, 47, 247, 0.2);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+    }
+    @media (max-width: 768px) {
+      .cursor, .cursor-trail { display: none; }
+    }
+
+    /* ---- Glass ---- */
+    .glass {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s;
+    }
+    .nav.scrolled { border-bottom-color: var(--border); }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: -0.01em;
+    }
+    .logo-icon { color: var(--accent); display: flex; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a {
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .btn-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text) !important;
+      transition: all 0.2s;
+    }
+    .btn-nav:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+    @media (max-width: 768px) {
+      .nav-links a:not(.btn-nav) { display: none; }
+    }
+
+    /* ---- Hero ---- */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 24px 60px;
+      overflow: hidden;
+    }
+    .hero-aurora {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 40%, rgba(123, 47, 247, 0.25) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(0, 212, 255, 0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 60%);
+      animation: aurora-shift 12s ease-in-out infinite alternate;
+    }
+    @keyframes aurora-shift {
+      0%   { opacity: 0.8; transform: scale(1) translateY(0); }
+      100% { opacity: 1; transform: scale(1.05) translateY(-20px); }
+    }
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 80px 80px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+    .hero-content {
+      position: relative;
+      text-align: center;
+      max-width: 800px;
+      z-index: 2;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      backdrop-filter: blur(8px);
+    }
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .hero-title {
+      font-size: clamp(44px, 7vw, 80px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+    .hero-title .line { display: block; }
+    .hero-title .accent {
+      background: linear-gradient(135deg, var(--accent), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-subtitle {
+      font-size: clamp(16px, 2vw, 19px);
+      color: var(--text-muted);
+      max-width: 580px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 56px;
+      flex-wrap: wrap;
+    }
+
+    /* ---- Buttons ---- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 0 24px rgba(123, 47, 247, 0.3);
+    }
+    .btn-primary:hover {
+      background: #8b3fff;
+      box-shadow: 0 0 40px rgba(123, 47, 247, 0.5);
+      transform: translateY(-2px);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.04);
+    }
+    .btn-large { padding: 16px 32px; font-size: 16px; }
+    .btn-magnetic {
+      position: relative;
+      will-change: transform;
+    }
+
+    /* ---- Stats ---- */
+    .hero-stats {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-bottom: 64px;
+    }
+    .stat { text-align: center; }
+    .stat-value {
+      display: block;
+      font-size: 36px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(135deg, var(--text), var(--text-muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .stat-divider {
+      width: 1px;
+      height: 40px;
+      background: var(--border);
+    }
+    @media (max-width: 480px) {
+      .hero-stats { gap: 24px; }
+      .stat-divider { display: none; }
+    }
+
+    /* ---- Hero Screenshot ---- */
+    .hero-screenshot {
+      position: relative;
+      z-index: 2;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .hero-screenshot .screenshot-wrap {
+      overflow: hidden;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    /* ---- Section Common ---- */
+    .section-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .section-tag {
+      display: inline-block;
+      padding: 4px 14px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .section-desc {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /* ---- Features Grid ---- */
+    .features { padding: 120px 0; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .feature-card {
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .feature-card:hover {
+      border-color: rgba(255,255,255,0.12);
+      transform: translateY(-4px);
+    }
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .feature-icon.purple { background: rgba(123, 47, 247, 0.15); color: var(--accent); }
+    .feature-icon.cyan   { background: rgba(0, 212, 255, 0.15); color: var(--accent-cyan); }
+    .feature-icon.green  { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); }
+    .feature-icon.orange { background: rgba(245, 158, 11, 0.15); color: var(--accent-orange); }
+    .feature-icon.blue   { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+    .feature-icon.pink   { background: rgba(236, 72, 153, 0.15); color: var(--accent-pink); }
+    .feature-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    @media (max-width: 900px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px) {
+      .features-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ---- Screenshots Gallery ---- */
+    .screenshots { padding: 0 0 120px; }
+    .screenshots-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .screenshot-item {
+      overflow: hidden;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    .screenshot-item:hover {
+      border-color: rgba(255,255,255,0.12);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+    .screenshot-label {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      padding-bottom: 4px;
+    }
+    @media (max-width: 640px) {
+      .screenshots-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ---- Architecture ---- */
+    .architecture { padding: 80px 0 120px; }
+    .arch-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 48px 32px;
+      flex-wrap: wrap;
+    }
+    .arch-node {
+      flex: 1;
+      min-width: 200px;
+      max-width: 280px;
+      padding: 28px 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.02);
+    }
+    .arch-node-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 17px;
+      margin-bottom: 16px;
+    }
+    .arch-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .arch-dot.blue   { background: var(--accent-blue); }
+    .arch-dot.green  { background: var(--accent-green); }
+    .arch-dot.orange { background: var(--accent-orange); }
+    .arch-node-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .arch-node-body code {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 4px 8px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 4px;
+    }
+    .arch-node-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .arch-arrows {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 0 16px;
+    }
+    .arch-arrow-line {
+      width: 48px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-cyan));
+      border-radius: 1px;
+    }
+    .arch-arrow-label {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text-muted);
+    }
+    .arch-flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 32px;
+    }
+    .arch-flow-node {
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .arch-flow-node.blue   { background: rgba(59,130,246,0.1); color: var(--accent-blue); }
+    .arch-flow-node.green  { background: rgba(34,197,94,0.1); color: var(--accent-green); }
+    .arch-flow-node.orange { background: rgba(245,158,11,0.1); color: var(--accent-orange); }
+    .arch-flow-node.muted  { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+    .arch-flow-arrow {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      .arch-diagram { flex-direction: column; gap: 16px; }
+      .arch-node { max-width: 100%; }
+      .arch-arrows { padding: 8px 0; }
+      .arch-arrow-line { width: 2px; height: 32px; }
+    }
+
+    /* ---- Tech Stack ---- */
+    .stack { padding: 0 0 120px; }
+    .stack-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+    .stack-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stack-item:hover {
+      border-color: rgba(255,255,255,0.15);
+      transform: translateY(-2px);
+    }
+    .stack-emoji {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      background: rgba(0, 212, 255, 0.1);
+      padding: 4px 6px;
+      border-radius: 4px;
+    }
+
+    /* ---- Setup / CTA ---- */
+    .setup { padding: 0 0 120px; }
+    .setup-card {
+      padding: 64px 48px;
+      text-align: center;
+    }
+    .terminal {
+      max-width: 640px;
+      margin: 0 auto 40px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      text-align: left;
+    }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .terminal-dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .terminal-dots span:first-child { background: #ff5f57; }
+    .terminal-dots span:nth-child(2) { background: #febc2e; }
+    .terminal-dots span:nth-child(3) { background: #28c840; }
+    .terminal-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+    .terminal-body {
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 2;
+    }
+    .t-prompt { color: var(--accent-green); }
+    .t-cmd { color: var(--text); }
+    .t-arg { color: var(--accent-cyan); }
+    .t-comment { color: var(--text-muted); font-style: italic; }
+    .t-cursor {
+      display: inline-block;
+      animation: blink 1s step-end infinite;
+      color: var(--accent);
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .setup-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 768px) {
+      .setup-card { padding: 40px 24px; }
+    }
+
+    /* ---- Footer ---- */
+    .footer {
+      padding: 48px 0;
+      border-top: 1px solid var(--border);
+    }
+    .footer-inner {
+      text-align: center;
+    }
+    .footer-text {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .footer-text a {
+      color: var(--accent);
+      transition: color 0.2s;
+    }
+    .footer-text a:hover { color: var(--accent-cyan); }
+    .footer-text.muted {
+      font-size: 12px;
+      margin-top: 8px;
+      color: rgba(255,255,255,0.2);
+    }
+
+    /* ---- Animations ---- */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+  </style>
+</head>
+<body>
+  <!-- Custom cursor -->
+  <div class="cursor"></div>
+  <div class="cursor-trail"></div>
+
+  <!-- Noise overlay -->
+  <div class="noise"></div>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <span class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+        </span>
+        <span>hh-applicant-tool</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Возможности</a>
+        <a href="#screenshots">Скриншоты</a>
+        <a href="#architecture">Архитектура</a>
+        <a href="#stack">Технологии</a>
+        <a href="https://github.com/nasyrov-ai/hh-auto-apply" class="btn-nav btn-magnetic">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-aurora"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Open Source &middot; Self-Hosted &middot; MIT License
+      </div>
+      <h1 class="hero-title">
+        <span class="line">Автоматизируй</span>
+        <span class="line accent">отклики на hh.ru</span>
+      </h1>
+      <p class="hero-subtitle">
+        AI-движок для hh.ru &mdash; отправляет отклики с уникальными сопроводительными письмами,
+        отвечает работодателям и отслеживает всё в real-time дашборде.
+      </p>
+      <div class="hero-actions">
+        <a href="https://github.com/nasyrov-ai/hh-auto-apply" class="btn btn-primary btn-magnetic" target="_blank" rel="noopener noreferrer">
+          <span>Начать</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#features" class="btn btn-ghost btn-magnetic">
+          <span>Подробнее</span>
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-value" data-count="500">0</span>
+          <span class="stat-label">вакансий обработано</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-value" data-count="200">0</span>
+          <span class="stat-label">откликов отправлено</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-value">7%</span>
+          <span class="stat-label">конверсия в приглашения</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hero Screenshot (below hero, full width) -->
+  <div class="container hero-screenshot">
+    <div class="screenshot-wrap">
+      <img src="screenshots/overview-dark.png" alt="Обзор дашборда" loading="eager">
+    </div>
+  </div>
+
+  <!-- Spacer -->
+  <div style="height: 120px;"></div>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Возможности</span>
+        <h2 class="section-title">Всё необходимое</h2>
+        <p class="section-desc">От авто-откликов до отслеживания результатов &mdash; один инструмент закрывает весь цикл.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card glass">
+          <div class="feature-icon purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>Автооклики</h3>
+          <p>Откликается на вакансии по вашему запросу с настраиваемыми фильтрами и лимитами.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon cyan">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="5" r="4"/></svg>
+          </div>
+          <h3>AI-сопроводительные</h3>
+          <p>GPT-4o или Claude генерирует уникальные письма, имитирующие живой человеческий стиль.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>Авто-ответы</h3>
+          <p>Контекстные AI-ответы на сообщения и приглашения от работодателей.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon orange">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </div>
+          <h3>Управление резюме</h3>
+          <p>Периодическое обновление резюме поддерживает вас в топе выдачи для рекрутеров.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          <h3>Real-time дашборд</h3>
+          <p>10 страниц для мониторинга откликов, управления worker и работы с переговорами.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon pink">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          </div>
+          <h3>Удалённый worker</h3>
+          <p>Фоновый процесс на VPS через командную очередь Supabase. Работает 24/7.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Self-Hosted</h3>
+          <p>Ваш собственный экземпляр Supabase. Данные остаются у вас. Никакого общего бэкенда.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon cyan">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <h3>Мастер настройки</h3>
+          <p>Интерактивный CLI настраивает всё за несколько минут: Supabase, переменные среды, авторизацию.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots -->
+  <section class="screenshots" id="screenshots">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Скриншоты</span>
+        <h2 class="section-title">Дашборд в действии</h2>
+        <p class="section-desc">Мониторинг, управление и аналитика &mdash; 10 страниц real-time данных.</p>
+      </div>
+      <div class="screenshots-grid">
+        <div>
+          <div class="screenshot-item">
+            <img src="screenshots/operations-dark.png" alt="Операции" loading="lazy">
+          </div>
+          <p class="screenshot-label">Операции &mdash; центр управления</p>
+        </div>
+        <div>
+          <div class="screenshot-item">
+            <img src="screenshots/negotiations-dark.png" alt="Переговоры" loading="lazy">
+          </div>
+          <p class="screenshot-label">Переговоры &mdash; трекинг откликов</p>
+        </div>
+        <div>
+          <div class="screenshot-item">
+            <img src="screenshots/logs-dark.png" alt="Логи" loading="lazy">
+          </div>
+          <p class="screenshot-label">Логи &mdash; выполнение в реальном времени</p>
+        </div>
+        <div>
+          <div class="screenshot-item">
+            <img src="screenshots/vacancies-dark.png" alt="Вакансии" loading="lazy">
+          </div>
+          <p class="screenshot-label">Вакансии &mdash; результаты поиска</p>
+        </div>
+        <div>
+          <div class="screenshot-item">
+            <img src="screenshots/employers-dark.png" alt="Работодатели" loading="lazy">
+          </div>
+          <p class="screenshot-label">Работодатели &mdash; каталог компаний</p>
+        </div>
+        <div>
+          <div class="screenshot-item">
+            <img src="screenshots/settings-dark.png" alt="Настройки" loading="lazy">
+          </div>
+          <p class="screenshot-label">Настройки &mdash; конфигурация</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section class="architecture" id="architecture">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Архитектура</span>
+        <h2 class="section-title">Три компонента, одна база данных</h2>
+        <p class="section-desc">Каждый пользователь владеет своими данными. Никакого общего бэкенда.</p>
+      </div>
+      <div class="arch-diagram glass">
+        <div class="arch-node">
+          <div class="arch-node-header">
+            <div class="arch-dot blue"></div>
+            <span>Dashboard</span>
+          </div>
+          <div class="arch-node-body">
+            <code>Next.js 16</code>
+            <code>React 19</code>
+            <code>shadcn/ui + Tailwind 4</code>
+            <code>Command palette (Cmd+K)</code>
+          </div>
+          <div class="arch-node-label">Vercel</div>
+        </div>
+        <div class="arch-arrows">
+          <div class="arch-arrow-line"></div>
+          <span class="arch-arrow-label">Realtime</span>
+        </div>
+        <div class="arch-node">
+          <div class="arch-node-header">
+            <div class="arch-dot green"></div>
+            <span>Supabase</span>
+          </div>
+          <div class="arch-node-body">
+            <code>PostgreSQL</code>
+            <code>Command Queue</code>
+            <code>Real-time subscriptions</code>
+            <code>Row-level security</code>
+          </div>
+          <div class="arch-node-label">Облако</div>
+        </div>
+        <div class="arch-arrows">
+          <div class="arch-arrow-line"></div>
+          <span class="arch-arrow-label">Polling</span>
+        </div>
+        <div class="arch-node">
+          <div class="arch-node-header">
+            <div class="arch-dot orange"></div>
+            <span>Worker</span>
+          </div>
+          <div class="arch-node-body">
+            <code>Python CLI process</code>
+            <code>Polls command queue</code>
+            <code>Calls hh.ru API</code>
+            <code>AI cover letter generation</code>
+          </div>
+          <div class="arch-node-label">VPS / Docker</div>
+        </div>
+      </div>
+      <div class="arch-flow">
+        <span class="arch-flow-node blue">Dashboard</span>
+        <span class="arch-flow-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        <span class="arch-flow-node green">Supabase</span>
+        <span class="arch-flow-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        <span class="arch-flow-node orange">Worker</span>
+        <span class="arch-flow-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        <span class="arch-flow-node muted">hh.ru API</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="stack" id="stack">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Технологии</span>
+        <h2 class="section-title">Технологический стек</h2>
+        <p class="section-desc">Современные инструменты, production-grade архитектура.</p>
+      </div>
+      <div class="stack-grid">
+        <div class="stack-item glass"><span class="stack-emoji">Py</span> Python 3.11+</div>
+        <div class="stack-item glass"><span class="stack-emoji">Nx</span> Next.js 16</div>
+        <div class="stack-item glass"><span class="stack-emoji">Re</span> React 19</div>
+        <div class="stack-item glass"><span class="stack-emoji">TW</span> Tailwind CSS 4</div>
+        <div class="stack-item glass"><span class="stack-emoji">UI</span> shadcn/ui</div>
+        <div class="stack-item glass"><span class="stack-emoji">PG</span> Supabase</div>
+        <div class="stack-item glass"><span class="stack-emoji">AI</span> OpenAI GPT-4o</div>
+        <div class="stack-item glass"><span class="stack-emoji">AI</span> Claude</div>
+        <div class="stack-item glass"><span class="stack-emoji">DK</span> Docker</div>
+        <div class="stack-item glass"><span class="stack-emoji">SD</span> systemd</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup / CTA -->
+  <section class="setup" id="setup">
+    <div class="container">
+      <div class="setup-card glass">
+        <div class="section-header">
+          <span class="section-tag">Быстрый старт</span>
+          <h2 class="section-title">Готов к автоматизации?</h2>
+          <p class="section-desc">Клонируй репозиторий, запусти мастер настройки и начни откликаться за несколько минут.</p>
+        </div>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="terminal-title">terminal</span>
+          </div>
+          <div class="terminal-body">
+            <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">git clone</span> <span class="t-arg">https://github.com/nasyrov-ai/hh-auto-apply.git</span></div>
+            <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">cd</span> <span class="t-arg">hh-applicant-tool</span></div>
+            <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">pip install</span> <span class="t-arg">-e .</span></div>
+            <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">hh-applicant-tool</span> <span class="t-arg">setup</span> <span class="t-comment"># мастер настройки</span></div>
+            <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">hh-applicant-tool</span> <span class="t-arg">apply</span> <span class="t-comment"># начать отклики</span></div>
+            <div class="terminal-line"><span class="t-cursor">_</span></div>
+          </div>
+        </div>
+        <div class="setup-actions">
+          <a href="https://github.com/nasyrov-ai/hh-auto-apply" class="btn btn-primary btn-magnetic btn-large" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span>Смотреть на GitHub</span>
+          </a>
+          <a href="https://github.com/nasyrov-ai/hh-auto-apply#readme" class="btn btn-ghost btn-magnetic btn-large" target="_blank" rel="noopener noreferrer">
+            <span>Документация</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <p class="footer-text">Создано с помощью Claude Code — <a href="https://t.me/nsrv_1618" target="_blank">@nsrv_1618</a></p>
+        <p class="footer-text muted">MIT License. Self-hosted. Без слежки.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script>
+    /* ============================================================
+       hh-applicant-tool — Landing Animations
+       ============================================================ */
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ---- Custom Cursor ----
+    const cursor = document.querySelector('.cursor');
+    const cursorTrail = document.querySelector('.cursor-trail');
+
+    if (cursor && window.innerWidth > 768) {
+      window.addEventListener('mousemove', (e) => {
+        gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1, ease: 'power2.out' });
+        gsap.to(cursorTrail, { x: e.clientX, y: e.clientY, duration: 0.35, ease: 'power2.out' });
+      });
+
+      document.querySelectorAll('a, button, .btn, .feature-card, .stack-item, .screenshot-item').forEach(el => {
+        el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+        el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+      });
+    }
+
+    // ---- Magnetic Buttons ----
+    document.querySelectorAll('.btn-magnetic').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = (e.clientX - rect.left - rect.width / 2) * 0.2;
+        const y = (e.clientY - rect.top - rect.height / 2) * 0.2;
+        gsap.to(btn, { x, y, duration: 0.3, ease: 'power2.out' });
+      });
+      btn.addEventListener('mouseleave', () => {
+        gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.5)' });
+      });
+    });
+
+    // ---- Nav scroll effect ----
+    const nav = document.querySelector('.nav');
+    ScrollTrigger.create({
+      start: 'top -80',
+      onUpdate: (self) => {
+        nav.classList.toggle('scrolled', self.progress > 0);
+      }
+    });
+
+    // ---- Hero entrance ----
+    const heroTL = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    heroTL
+      .from('.hero-badge', { y: 20, opacity: 0, duration: 0.6 })
+      .from('.hero-title .line', { y: '100%', opacity: 0, duration: 0.8, stagger: 0.15, ease: 'power4.out' }, '-=0.3')
+      .from('.hero-subtitle', { y: 20, opacity: 0, duration: 0.6 }, '-=0.4')
+      .from('.hero-actions .btn', { y: 20, opacity: 0, duration: 0.5, stagger: 0.1 }, '-=0.3')
+      .from('.hero-stats .stat', { y: 20, opacity: 0, duration: 0.5, stagger: 0.1 }, '-=0.3')
+      .from('.hero-stats .stat-divider', { scaleY: 0, duration: 0.3 }, '-=0.3')
+      .from('.hero-screenshot', { y: 60, opacity: 0, duration: 0.8, ease: 'power2.out' }, '-=0.2');
+
+    // ---- Counter animation ----
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const target = parseInt(el.dataset.count);
+      gsap.to(el, {
+        textContent: target,
+        duration: 2,
+        ease: 'power2.out',
+        snap: { textContent: 1 },
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 90%',
+          once: true,
+        },
+        onUpdate: function() {
+          el.textContent = Math.round(parseFloat(el.textContent)) + '+';
+        }
+      });
+    });
+
+    // ---- Features reveal ----
+    gsap.from('.features .section-header', {
+      y: 40, opacity: 0, duration: 0.6,
+      scrollTrigger: { trigger: '.features', start: 'top 75%' }
+    });
+
+    gsap.from('.feature-card', {
+      y: 60, opacity: 0, duration: 0.6, stagger: 0.08,
+      scrollTrigger: { trigger: '.features-grid', start: 'top 80%' }
+    });
+
+    // ---- Screenshots reveal ----
+    gsap.from('.screenshots .section-header', {
+      y: 40, opacity: 0, duration: 0.6,
+      scrollTrigger: { trigger: '.screenshots', start: 'top 75%' }
+    });
+
+    gsap.from('.screenshots-grid > div', {
+      y: 60, opacity: 0, duration: 0.6, stagger: 0.1,
+      scrollTrigger: { trigger: '.screenshots-grid', start: 'top 80%' }
+    });
+
+    // ---- Architecture reveal ----
+    gsap.from('.architecture .section-header', {
+      y: 40, opacity: 0, duration: 0.6,
+      scrollTrigger: { trigger: '.architecture', start: 'top 75%' }
+    });
+
+    gsap.from('.arch-node', {
+      y: 40, opacity: 0, duration: 0.5, stagger: 0.15,
+      scrollTrigger: { trigger: '.arch-diagram', start: 'top 80%' }
+    });
+
+    gsap.from('.arch-arrows', {
+      scale: 0, opacity: 0, duration: 0.3, stagger: 0.1,
+      scrollTrigger: { trigger: '.arch-diagram', start: 'top 75%' }
+    });
+
+    gsap.from('.arch-flow', {
+      y: 20, opacity: 0, duration: 0.5,
+      scrollTrigger: { trigger: '.arch-flow', start: 'top 90%' }
+    });
+
+    // ---- Stack pills reveal ----
+    gsap.from('.stack .section-header', {
+      y: 40, opacity: 0, duration: 0.6,
+      scrollTrigger: { trigger: '.stack', start: 'top 80%' }
+    });
+
+    gsap.from('.stack-item', {
+      y: 30, opacity: 0, duration: 0.4, stagger: 0.05,
+      scrollTrigger: { trigger: '.stack-grid', start: 'top 85%' }
+    });
+
+    // ---- Setup reveal ----
+    gsap.from('.setup-card', {
+      y: 60, opacity: 0, duration: 0.8,
+      scrollTrigger: { trigger: '.setup', start: 'top 75%' }
+    });
+
+    // ---- Terminal typing effect ----
+    ScrollTrigger.create({
+      trigger: '.terminal',
+      start: 'top 80%',
+      once: true,
+      onEnter: () => {
+        const lines = document.querySelectorAll('.terminal-line');
+        lines.forEach((line, i) => {
+          gsap.from(line, {
+            opacity: 0, x: -10,
+            duration: 0.3,
+            delay: i * 0.15,
+          });
+        });
+      }
+    });
+
+    // ---- Hero parallax ----
+    gsap.to('.hero-aurora', {
+      yPercent: 30,
+      ease: 'none',
+      scrollTrigger: { scrub: 1.5 }
+    });
+
+    gsap.to('.hero-grid', {
+      yPercent: 20,
+      opacity: 0,
+      ease: 'none',
+      scrollTrigger: { scrub: 1 }
+    });
+
+    // ---- Footer ----
+    gsap.from('.footer-inner', {
+      y: 20, opacity: 0, duration: 0.6,
+      scrollTrigger: { trigger: '.footer', start: 'top 95%' }
+    });
+  </script>
+</body>
+</html>

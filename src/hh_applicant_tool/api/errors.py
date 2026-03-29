@@ -46,19 +46,20 @@ class ApiError(BadResponse):
 
     @property
     def message(self) -> str:
-        return (
+        if desc := (
             self._data.get("error_description")
             or self._data.get("description")
-            or (
-                "An errors has occurred: "
-                + "; ".join(
-                    v["type"] + (f": {v['value']}" if "value" in v else "")
-                    for v in self._data["errors"]
-                )
-            )
-            if "errors" in self._data
-            else str(self._data)
-        )
+        ):
+            return desc
+        if "errors" in self._data:
+            parts = []
+            for v in self._data["errors"]:
+                part = v.get("type", "unknown")
+                if "value" in v:
+                    part += f": {v['value']}"
+                parts.append(part)
+            return "An errors has occurred: " + "; ".join(parts)
+        return str(self._data)
 
     #     def __getattr__(self, name: str) -> Any:
     #         try:

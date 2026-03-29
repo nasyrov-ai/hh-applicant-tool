@@ -222,7 +222,7 @@ class HHApplicantTool(MegaTool):
         token = config.get("token", {})
         return api.client.ApiClient(
             client_id=config.get("client_id"),
-            client_secret=config.get("client_id"),
+            client_secret=config.get("client_secret"),
             access_token=token.get("access_token"),
             refresh_token=token.get("refresh_token"),
             access_expires_at=token.get("access_expires_at"),
@@ -238,16 +238,18 @@ class HHApplicantTool(MegaTool):
         return self.api_client.get("/resumes/mine").get("items", [])
 
     def first_resume_id(self) -> str:
-        resume = self.get_resumes()[0]
-        return resume["id"]
+        resumes = self.get_resumes()
+        if not resumes:
+            raise ValueError("У вас нет резюме на hh.ru")
+        return resumes[0]["id"]
 
-    def get_blacklisted(self) -> list[str]:
-        rv = []
+    def get_blacklisted(self) -> set[str]:
+        rv: set[str] = set()
         for page in count():
             r: api.datatypes.PaginatedItems[api.datatypes.EmployerShort] = (
                 self.api_client.get("/employers/blacklisted", page=page)
             )
-            rv += [item["id"] for item in r["items"]]
+            rv.update(item["id"] for item in r["items"])
             if page + 1 >= r["pages"]:
                 break
         return rv
@@ -307,6 +309,21 @@ class HHApplicantTool(MegaTool):
             session=self.session,
         )
 
+    def get_claude_chat(self, system_prompt: str) -> ai.ChatClaudeCli:
+        c = self.config.get("claude", {})
+        return ai.ChatClaudeCli(
+            model=c.get("model", "claude-opus-4-6"),
+            system_prompt=system_prompt,
+            timeout=c.get("timeout", 60.0),
+        )
+
+    def get_ai_chat(self, system_prompt: str) -> ai.ChatOpenAI | ai.ChatClaudeCli:
+        """Возвращает AI-чат. Claude CLI приоритетнее OpenAI."""
+        provider = self.config.get("ai_provider", "claude")
+        if provider == "claude":
+            return self.get_claude_chat(system_prompt)
+        return self.get_openai_chat(system_prompt)
+
     # TODO: вынести в миксин какой
     def _extract_xsrf_token(self, content: str) -> str:
         xsrf_token_marker = ',"xsrfToken":"'
@@ -331,10 +348,9 @@ class HHApplicantTool(MegaTool):
     @property
     def is_logged_in(self) -> bool:
         """Проверяет авторизован ли пользователь через сайт."""
-        return self.session.get("https://hh.ru/settings").status_code == 200
+        return self.session.get("https://hh.ru/settings", allow_redirects=False).status_code == 200
 
-    @cached_property
-    def smtp(self) -> smtplib.SMTP | smtplib.SMTP_SSL:
+    def create_smtp(self) -> smtplib.SMTP | smtplib.SMTP_SSL:
         conf = self.config.get("smtp", {})
         host = conf.get("host")
         port = conf.get("port")
@@ -356,10 +372,14 @@ class HHApplicantTool(MegaTool):
 
         return server
 
+    @cached_property
+    def smtp(self) -> smtplib.SMTP | smtplib.SMTP_SSL:
+        return self.create_smtp()
+
     def run(self) -> None | int:
         verbosity_level = max(
             logging.DEBUG,
-            logging.WARNING - self.args.verbosity * 10,
+            logging.INFO - self.args.verbosity * 10,
         )
 
         setup_logger(logger, verbosity_level, self.log_file)
@@ -407,11 +427,20 @@ class HHApplicantTool(MegaTool):
             self._parser.print_help(file=sys.stderr)
             return 2
         finally:
+            # Cleanup ресурсов
+            if "session" in self.__dict__:
+                self.session.close()
+            if "db" in self.__dict__:
+                self.db.close()
+            if "smtp" in self.__dict__:
+                try:
+                    self.smtp.quit()
+                except Exception:
+                    pass
             try:
                 self._check_system()
             except Exception:
                 pass
-                # raise
 
     def _parse_args(self, argv) -> None:
         self._parser = self._create_parser()

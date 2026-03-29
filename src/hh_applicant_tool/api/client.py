@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import json
 import logging
 import time
 from dataclasses import dataclass
@@ -46,7 +47,7 @@ class BaseClient:
 
     def __post_init__(self) -> None:
         assert self.base_url.endswith("/"), "base_url must ends with /"
-        self.delay = self.delay or DEFAULT_DELAY
+        self.delay = self.delay if self.delay is not None else DEFAULT_DELAY
         self.user_agent = self.user_agent or generate_android_useragent()
 
         # logger.debug(f"user agent: {self.user_agent}")
@@ -83,13 +84,15 @@ class BaseClient:
         url = self.resolve_url(endpoint)
         with self.lock:
             # На серваке какая-то анти-DDOS система
-            if (
-                delay := (self.delay if delay is None else delay)
+            effective_delay = self.delay if delay is None else delay
+            wait_time = (
+                effective_delay
                 - time.monotonic()
                 + self._previous_request_time
-            ) > 0:
-                logger.debug("wait %fs before request", delay)
-                time.sleep(delay)
+            )
+            if wait_time > 0:
+                logger.debug("wait %fs before request", wait_time)
+                time.sleep(wait_time)
             has_body = method in ["POST", "PUT"]
             payload = {
                 ["data", "json"][as_json] if has_body else "params": params
@@ -110,8 +113,8 @@ class BaseClient:
                 # ...
                 # 'Transfer-Encoding': 'chunked'
                 try:
-                    rv = response.json() if response.text else {}
-                except as_json.decoder.JSONDecodeError as ex:
+                    rv = response.json() if response.content else {}
+                except json.JSONDecodeError as ex:
                     raise errors.BadResponse(
                         f"Can't decode JSON: {method} {url} ({response.status_code})"
                     ) from ex

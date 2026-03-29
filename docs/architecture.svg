@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 3 L 0 6 z" fill="#3b82f6"/>
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 3 L 0 6 z" fill="#525252"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="400" rx="0" fill="#09090b"/>
+
+  <!-- Dashboard Card -->
+  <rect x="30" y="40" width="200" height="160" rx="12" fill="#09090b" stroke="#27272a" stroke-width="1.5"/>
+  <rect x="30" y="40" width="200" height="36" rx="12" fill="#18181b"/>
+  <rect x="30" y="64" width="200" height="12" fill="#18181b"/>
+  <text x="130" y="63" text-anchor="middle" fill="#f5f5f5" font-size="13" font-weight="600">Dashboard</text>
+  <text x="130" y="82" text-anchor="middle" fill="#a1a1aa" font-size="10">Vercel</text>
+
+  <text x="50" y="110" fill="#d4d4d8" font-size="10">Next.js 16</text>
+  <text x="50" y="128" fill="#d4d4d8" font-size="10">React 19</text>
+  <text x="50" y="146" fill="#d4d4d8" font-size="10">shadcn/ui</text>
+  <text x="50" y="164" fill="#d4d4d8" font-size="10">Tailwind CSS 4</text>
+
+  <rect x="138" y="100" width="80" height="22" rx="6" fill="#172554"/>
+  <text x="178" y="115" text-anchor="middle" fill="#60a5fa" font-size="9" font-weight="500">10 pages</text>
+
+  <rect x="138" y="130" width="80" height="22" rx="6" fill="#172554"/>
+  <text x="178" y="145" text-anchor="middle" fill="#60a5fa" font-size="9" font-weight="500">Real-time UI</text>
+
+  <!-- Supabase Card -->
+  <rect x="300" y="40" width="200" height="160" rx="12" fill="#09090b" stroke="#27272a" stroke-width="1.5"/>
+  <rect x="300" y="40" width="200" height="36" rx="12" fill="#18181b"/>
+  <rect x="300" y="64" width="200" height="12" fill="#18181b"/>
+  <text x="400" y="63" text-anchor="middle" fill="#f5f5f5" font-size="13" font-weight="600">Supabase</text>
+  <text x="400" y="82" text-anchor="middle" fill="#a1a1aa" font-size="10">PostgreSQL</text>
+
+  <text x="320" y="110" fill="#d4d4d8" font-size="10">Command Queue</text>
+  <text x="320" y="128" fill="#d4d4d8" font-size="10">Auth (Row-Level Security)</text>
+  <text x="320" y="146" fill="#d4d4d8" font-size="10">Real-time Sync</text>
+  <text x="320" y="164" fill="#d4d4d8" font-size="10">Data + Storage</text>
+
+  <!-- Worker Card -->
+  <rect x="300" y="240" width="200" height="130" rx="12" fill="#09090b" stroke="#27272a" stroke-width="1.5"/>
+  <rect x="300" y="240" width="200" height="36" rx="12" fill="#18181b"/>
+  <rect x="300" y="264" width="200" height="12" fill="#18181b"/>
+  <text x="400" y="263" text-anchor="middle" fill="#f5f5f5" font-size="13" font-weight="600">Worker</text>
+  <text x="400" y="282" text-anchor="middle" fill="#a1a1aa" font-size="10">VPS / Docker</text>
+
+  <text x="320" y="308" fill="#d4d4d8" font-size="10">Python CLI Process</text>
+  <text x="320" y="326" fill="#d4d4d8" font-size="10">Polls command queue</text>
+  <text x="320" y="344" fill="#d4d4d8" font-size="10">Executes operations</text>
+
+  <!-- hh.ru API Card -->
+  <rect x="580" y="40" width="190" height="72" rx="12" fill="#09090b" stroke="#27272a" stroke-width="1.5"/>
+  <rect x="580" y="40" width="190" height="36" rx="12" fill="#18181b"/>
+  <rect x="580" y="64" width="190" height="12" fill="#18181b"/>
+  <text x="675" y="63" text-anchor="middle" fill="#f5f5f5" font-size="13" font-weight="600">hh.ru API</text>
+  <text x="675" y="88" text-anchor="middle" fill="#a1a1aa" font-size="10">Vacancies, Resumes, Negotiations</text>
+
+  <!-- AI API Card -->
+  <rect x="580" y="140" width="190" height="72" rx="12" fill="#09090b" stroke="#27272a" stroke-width="1.5"/>
+  <rect x="580" y="140" width="190" height="36" rx="12" fill="#18181b"/>
+  <rect x="580" y="164" width="190" height="12" fill="#18181b"/>
+  <text x="675" y="163" text-anchor="middle" fill="#f5f5f5" font-size="13" font-weight="600">OpenAI / Claude</text>
+  <text x="675" y="188" text-anchor="middle" fill="#a1a1aa" font-size="10">AI Cover Letters</text>
+
+  <!-- CLI Card (small) -->
+  <rect x="30" y="280" width="200" height="72" rx="12" fill="#09090b" stroke="#27272a" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <rect x="30" y="280" width="200" height="36" rx="12" fill="#18181b"/>
+  <rect x="30" y="304" width="200" height="12" fill="#18181b"/>
+  <text x="130" y="303" text-anchor="middle" fill="#f5f5f5" font-size="13" font-weight="600">CLI</text>
+  <text x="130" y="330" text-anchor="middle" fill="#71717a" font-size="10">Standalone mode (optional)</text>
+
+  <!-- External label -->
+  <text x="675" y="30" text-anchor="middle" fill="#525252" font-size="9" font-weight="500" letter-spacing="1.5">EXTERNAL SERVICES</text>
+
+  <!-- Arrow: Dashboard -> Supabase -->
+  <line x1="230" y1="100" x2="296" y2="100" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="263" y="93" text-anchor="middle" fill="#60a5fa" font-size="8">commands</text>
+
+  <!-- Arrow: Supabase -> Dashboard -->
+  <line x1="296" y1="140" x2="230" y2="140" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="263" y="155" text-anchor="middle" fill="#60a5fa" font-size="8">state</text>
+
+  <!-- Arrow: Supabase -> Worker (commands) -->
+  <line x1="410" y1="200" x2="410" y2="236" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="434" y="224" fill="#60a5fa" font-size="8">poll</text>
+
+  <!-- Arrow: Worker -> Supabase (results) -->
+  <line x1="390" y1="240" x2="390" y2="204" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="370" y="224" fill="#60a5fa" font-size="8" text-anchor="end">results</text>
+
+  <!-- Arrow: Worker -> hh.ru API -->
+  <line x1="500" y1="280" x2="576" y2="80" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="558" y="168" fill="#60a5fa" font-size="8" transform="rotate(-69, 558, 168)">apply / fetch</text>
+
+  <!-- Arrow: Worker -> AI API -->
+  <line x1="500" y1="330" x2="576" y2="180" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="556" y="262" fill="#60a5fa" font-size="8" transform="rotate(-63, 556, 262)">generate letters</text>
+
+  <!-- Arrow: CLI -> Worker (dashed, optional) -->
+  <line x1="230" y1="316" x2="296" y2="310" stroke="#525252" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow-muted)"/>
+  <text x="263" y="306" text-anchor="middle" fill="#525252" font-size="8">same process</text>
+</svg>

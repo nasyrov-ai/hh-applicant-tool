@@ -24,7 +24,7 @@ class ChatOpenAI:
     temperature: float = 0.7
     max_completion_tokens: int = 1000
     model: str | None = None
-    completion_endpoint: str = None
+    completion_endpoint: str | None = None
     session: requests.Session = field(default_factory=requests.Session)
 
     def __post_init__(self) -> None:
@@ -63,13 +63,17 @@ class ChatOpenAI:
                 headers=self._default_headers(),
                 timeout=self.timeout,
             )
-            response.raise_for_status()
-
             data = response.json()
             if "error" in data:
-                raise OpenAIError(data["error"]["message"])
+                err_msg = data["error"].get("message", str(data["error"])) if isinstance(data["error"], dict) else str(data["error"])
+                raise OpenAIError(err_msg)
 
-            assistant_message = data["choices"][0]["message"]["content"]
+            response.raise_for_status()
+
+            try:
+                assistant_message = data["choices"][0]["message"]["content"]
+            except (KeyError, IndexError, TypeError) as ex:
+                raise OpenAIError(f"Unexpected API response format: {ex}") from ex
 
             return assistant_message
 

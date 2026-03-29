@@ -124,17 +124,22 @@ class ErrorReporter:
         )
 
     def __send_report(self: HHApplicantTool, data: bytes) -> int:
+        import os
+
+        report_url = os.getenv("HH_REPORT_URL")
+        if not report_url:
+            log.debug("HH_REPORT_URL not set, skipping report")
+            return False
+
         try:
             r = self.session.post(
-                # "http://localhost:8000/report",
-                "https://hh-applicant-tool.mooo.com:54157/report",
+                report_url,
                 data=data,
                 timeout=15.0,
             )
             r.raise_for_status()
             return r.status_code == 200
         except RequestException:
-            # log.error("Network error: %s", e)
             return False
 
     def _process_reporting(self):
@@ -165,8 +170,10 @@ class ErrorReporter:
                         log.debug("Report failed")
                 else:
                     log.debug("Nothing to report")
-            finally:
-                # Сохраняем время последней попытки/удачного репорта
+            except Exception:
+                log.debug("Report error", exc_info=True)
+            else:
+                # Обновляем время только при успешной отправке или отсутствии данных
                 self.storage.settings.set_value("_last_report", datetime.now())
 
 

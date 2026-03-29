@@ -128,8 +128,16 @@ class Operation(BaseOperation):
             )
 
             try:
-                android_device = pw.devices["Galaxy A55"]
-                context = await browser.new_context(**android_device)
+                if self.is_automated:
+                    android_device = pw.devices["Galaxy A55"]
+                    context = await browser.new_context(**android_device)
+                else:
+                    # Desktop context for manual mode — allows choosing
+                    # "applicant" vs "employer" account type on hh.ru
+                    context = await browser.new_context(
+                        viewport={"width": 1280, "height": 900},
+                        user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+                    )
                 page = await context.new_page()
 
                 code_future: asyncio.Future[str | None] = asyncio.Future()
@@ -145,14 +153,52 @@ class Operation(BaseOperation):
 
                 page.on("request", handle_request)
 
+                oauth_url = api_client.oauth_client.authorize_url
                 logger.debug(
-                    f"Переход на страницу OAuth: {api_client.oauth_client.authorize_url}"
+                    f"Переход на страницу OAuth: {oauth_url}"
                 )
-                await page.goto(
-                    api_client.oauth_client.authorize_url,
-                    timeout=30000,
-                    wait_until="load",
-                )
+
+                if not self.is_automated:
+                    # For manual mode: go to applicant login, then OAuth
+                    # Step 1: Log out from any existing session
+                    await page.goto(
+                        "https://hh.ru/account/logout",
+                        timeout=60000,
+                        wait_until="domcontentloaded",
+                    )
+                    # Step 2: Go to applicant login page
+                    await page.goto(
+                        "https://hh.ru/account/login?backurl=/&role=applicant",
+                        timeout=60000,
+                        wait_until="domcontentloaded",
+                    )
+                    print(
+                        "\n🔑 Войдите как СОИСКАТЕЛЬ в открытом браузере.\n"
+                        "   Если у вас два аккаунта (работодатель + соискатель),\n"
+                        "   убедитесь что входите именно как соискатель.\n"
+                        "   После входа подождите — авторизация продолжится автоматически.\n"
+                    )
+                    # Wait until user logs in and lands on any non-login page
+                    try:
+                        await page.wait_for_url(
+                            lambda url: "hh.ru" in url and "/account/login" not in url and "/account/logout" not in url,
+                            timeout=300000,
+                        )
+                    except Exception:
+                        pass
+                    logger.info("Вход выполнен, получаем OAuth-токен...")
+                    # Step 3: Navigate to OAuth — session cookies should give applicant token
+                    await page.goto(
+                        oauth_url,
+                        timeout=60000,
+                        wait_until="domcontentloaded",
+                    )
+                else:
+                    await page.goto(
+                        oauth_url,
+                        timeout=30000,
+                        wait_until="load",
+                    )
 
                 if self.is_automated:
                     await page.wait_for_selector(

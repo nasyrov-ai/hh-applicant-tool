@@ -52,6 +52,8 @@ coverage.xml
 
 # Environments
 .env
+.env.*
+!.env.example
 .venv
 env/
 venv/
@@ -90,3 +92,34 @@ docker/
 !/config/.gitkeep
 
 Session.vim
+
+# Node
+node_modules/
+
+# Next.js build artifacts
+**/.next/
+**/out/
+dashboard/.env.local
+dashboard/.env*.local
+landing/.env.local
+landing/.env*.local
+
+# Local scripts with secrets
+run_daily.sh
+run_chats.sh
+test_letter.py
+logs/
+
+# Personal data / local databases
+data/
+
+# Playwright MCP
+.playwright-mcp/
+
+# Vercel project metadata
+dashboard/.vercel/
+
+# Personal files
+REPORT_AI_DETECTION.md
+excuse-generator-*.png
+letter.txt

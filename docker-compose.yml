@@ -1,4 +1,5 @@
 services:
+  # === Cron mode (legacy) ===
   hh_applicant_tool:
     container_name: hh_applicant_tool
     image: hh_applicant_tool:latest
@@ -7,13 +8,28 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/app
-      # Пробрасываем таймзону хоста
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
     environment:
-      # Это не трогаем
       - CONFIG_DIR=/app/config
-      # Смените или закомментируйте при проблемах
       - TERM=${TERM}
-      # Если время на сервере отличается
-      # - TZ=Europe/Moscow
+    profiles:
+      - cron
+
+  # === Worker mode (dashboard-driven) ===
+  worker:
+    container_name: hh_worker
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    volumes:
+      - ${CONFIG_DIR:-./config}:/app/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - CONFIG_DIR=/app/config
+      - HH_PROFILE_ID=${HH_PROFILE_ID:-}
+    profiles:
+      - worker

@@ -1,0 +1,15 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Копируем файлы пакета
+COPY src /app/src
+COPY pyproject.toml README.md /app/
+
+# Ставим с worker extras (supabase + croniter)
+RUN pip install --no-cache-dir -e '.[worker]'
+
+# Рабочая директория для конфига
+RUN mkdir -p /app/config
+
+CMD ["python", "-m", "hh_applicant_tool.worker"]

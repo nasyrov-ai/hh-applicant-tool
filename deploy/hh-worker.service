@@ -1,0 +1,20 @@
+[Unit]
+Description=HH Applicant Tool Worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Change to your Linux user
+User=your-user
+WorkingDirectory=/opt/hh-applicant-tool
+ExecStart=/opt/hh-applicant-tool/.venv/bin/python -m hh_applicant_tool.worker
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hh-worker
+EnvironmentFile=/opt/hh-applicant-tool/.env.worker
+
+[Install]
+WantedBy=multi-user.target

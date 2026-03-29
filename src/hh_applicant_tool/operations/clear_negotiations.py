@@ -14,6 +14,12 @@ from ..utils.date import parse_api_datetime
 if TYPE_CHECKING:
     from ..main import HHApplicantTool
 
+try:
+    from hh_applicant_tool.worker import is_cancelled
+except ImportError:
+    def is_cancelled() -> bool:
+        return False
+
 logger = logging.getLogger(__package__)
 
 
@@ -73,7 +79,7 @@ class Operation(BaseOperation):
             "X-Hhtmsource": "negotiation_list",
             "X-Requested-With": "XMLHttpRequest",
             "X-Xsrftoken": self.tool.xsrf_token,
-            "Refrerer": "https://hh.ru/applicant/negotiations?hhtmFrom=main&hhtmFromLabel=header",
+            "Referer": "https://hh.ru/applicant/negotiations?hhtmFrom=main&hhtmFromLabel=header",
         }
 
         payload = {
@@ -95,9 +101,19 @@ class Operation(BaseOperation):
             return False
 
     def clear(self) -> None:
-        blacklisted = set(self.tool.get_blacklisted())
-        for negotiation in self.tool.get_negotiations():
-            vacancy = negotiation["vacancy"]
+        blacklisted = self.tool.get_blacklisted()
+        from itertools import chain
+        all_negotiations = chain(
+            self.tool.get_negotiations("active"),
+            self.tool.get_negotiations("archived"),
+        )
+        for negotiation in all_negotiations:
+            if is_cancelled():
+                logger.info("Операция отменена пользователем")
+                break
+            vacancy = negotiation.get("vacancy")
+            if not vacancy:
+                continue
 
             # Если работодателя блокируют, то он превращается в null
             # ХХ позволяет скрывать компанию, когда id нет, а вместо имени "Крупная российская компания"
@@ -130,12 +146,10 @@ class Operation(BaseOperation):
                 if not self.args.dry_run:
                     self.tool.api_client.delete(
                         f"/negotiations/active/{negotiation['id']}",
-                        with_decline_message=negotiation["state"]["id"]
-                        != "discard",
                     )
 
-                    print(
-                        "❌ Отменили отклик на вакансию:",
+                    logger.info(
+                        "Отменили отклик на вакансию: %s %s",
                         vacancy["alternate_url"],
                         vacancy["name"],
                     )
@@ -148,21 +162,26 @@ class Operation(BaseOperation):
 
                     if not self.args.dry_run:
                         if self.delete_chat(negotiation["id"]):
-                            print(f"❌ Удалили чат #{negotiation['id']}")
+                            logger.info("Удалили чат #%s", negotiation["id"])
 
-                d = parse_api_datetime(
-                    negotiation["updated_at"]
-                ) - parse_api_datetime(negotiation["created_at"])
+                try:
+                    d = parse_api_datetime(
+                        negotiation["updated_at"]
+                    ) - parse_api_datetime(negotiation["created_at"])
+                    ats_seconds = d.total_seconds()
+                except (ValueError, TypeError, KeyError):
+                    ats_seconds = -1
 
-                logger.debug("Ответ на отклик пришел через %d сек.", d.seconds)
+                logger.debug("Ответ на отклик пришел через %d сек.", ats_seconds)
 
-                ats_detected = d.seconds <= 16 * 60
+                ats_detected = 0 <= ats_seconds <= 16 * 60
 
                 if ats_detected:
+                    employer_info = vacancy.get("employer") or {}
                     logger.info(
                         "Признаки использования ATS компанией: %s (%s)",
-                        vacancy["employer"]["name"],
-                        vacancy["employer"]["alternate_url"],
+                        employer_info.get("name", "—"),
+                        employer_info.get("alternate_url", "—"),
                     )
 
                 employer = vacancy.get("employer", {})
@@ -179,8 +198,8 @@ class Operation(BaseOperation):
                 ):
                     logger.debug(
                         "Пробуем заблокировать работодателя %s %s",
-                        employer["alternate_url"],
-                        employer["name"],
+                        employer.get("alternate_url", "—"),
+                        employer.get("name", "—"),
                     )
 
                     if not self.args.dry_run:
@@ -189,12 +208,12 @@ class Operation(BaseOperation):
                         )
                         blacklisted.add(employer_id)
 
-                        print(
-                            "💀 Работодатель заблокирован:",
-                            employer["alternate_url"],
-                            employer["name"],
+                        logger.info(
+                            "Работодатель заблокирован: %s %s",
+                            employer.get("alternate_url", "—"),
+                            employer.get("name", "—"),
                         )
             except ApiError as err:
                 logger.error(err)
 
-        print("✅ Удаление откликов завершено.")
+        logger.info("Удаление откликов завершено.")

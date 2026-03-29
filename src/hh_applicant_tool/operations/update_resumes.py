@@ -12,6 +12,12 @@ from ..utils.string import shorten
 if TYPE_CHECKING:
     from ..main import HHApplicantTool
 
+try:
+    from hh_applicant_tool.worker import is_cancelled
+except ImportError:
+    def is_cancelled() -> bool:
+        return False
+
 
 logger = logging.getLogger(__package__)
 
@@ -34,6 +40,9 @@ class Operation(BaseOperation):
         tool.storage.resumes.save_batch(resumes)
 
         for resume in resumes:
+            if is_cancelled():
+                logger.info("Операция отменена пользователем")
+                break
             if not resume.get("can_publish_or_update"):
                 logger.warning(f"Не могу обновить: {resume['alternate_url']}")
                 continue
@@ -42,10 +51,9 @@ class Operation(BaseOperation):
                     f"/resumes/{resume['id']}/publish",
                 )
                 assert {} == r
-                print(
-                    "✅ Обновлено",
+                logger.info(
+                    "Обновлено: %s - %s",
                     resume["alternate_url"],
-                    "-",
                     shorten(resume["title"]),
                 )
             except ApiError as ex:
