@@ -21,6 +21,18 @@ export async function executeCommand(
 
   const supabase = await createServerSupabase();
 
+  // Prevent duplicate commands
+  const { data: existing } = await supabase
+    .from("command_queue")
+    .select("id")
+    .eq("command", command)
+    .in("status", ["pending", "running"])
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    throw new Error(`Команда "${command}" уже выполняется или в очереди`);
+  }
+
   const { data, error } = await supabase
     .from("command_queue")
     .insert({ command, args, status: "pending" })
@@ -29,6 +41,20 @@ export async function executeCommand(
 
   if (error) throw new Error(error.message);
   return data;
+}
+
+export async function getActiveCommands(): Promise<
+  { id: string; command: string; status: string }[]
+> {
+  const supabase = await createServerSupabase();
+
+  const { data } = await supabase
+    .from("command_queue")
+    .select("id, command, status")
+    .in("status", ["pending", "running"])
+    .order("created_at", { ascending: false });
+
+  return data || [];
 }
 
 export async function cancelCommand(commandId: string) {

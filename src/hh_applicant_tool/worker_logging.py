@@ -59,8 +59,9 @@ class SupabaseLogHandler(logging.Handler):
         try:
             self.client.table("execution_logs").insert(batch).execute()
         except Exception:
-            # Не теряем логи — возвращаем в буфер
-            self._buffer = batch + self._buffer
+            # Return to buffer but cap size to prevent OOM
+            max_size = self.max_buffer * 10
+            self._buffer = (batch + self._buffer)[-max_size:]
 
     def close(self) -> None:
         self.flush()

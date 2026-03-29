@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { CommandStatus } from "./command-status";
-import { executeCommand } from "./actions";
+import { executeCommand, getActiveCommands } from "./actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +94,17 @@ export default function OperationsPage() {
     Record<string, string>
   >({});
   const [loadingCommand, setLoadingCommand] = useState<string | null>(null);
+
+  // Load active commands on mount (survives page reload)
+  useEffect(() => {
+    getActiveCommands().then((active) => {
+      const map: Record<string, string> = {};
+      for (const cmd of active) {
+        map[cmd.command] = cmd.id;
+      }
+      setRunningCommands((prev) => ({ ...map, ...prev }));
+    });
+  }, []);
 
   async function handleRun(op: OperationDef, formArgs: Record<string, unknown>) {
     setLoadingCommand(op.command);

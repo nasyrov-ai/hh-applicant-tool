@@ -40,7 +40,7 @@ async function getStats(supabase: Awaited<ReturnType<typeof createServerSupabase
     recentActivityResult,
   ] = await Promise.all([
     db.from("negotiations").select("*", { count: "exact", head: true }),
-    db.from("negotiations").select("*", { count: "exact", head: true }).eq("state", "interview"),
+    db.from("negotiations").select("*", { count: "exact", head: true }).like("state", "inv%"),
     db.from("negotiations").select("*", { count: "exact", head: true }).eq("state", "discard"),
     db.from("vacancies").select("*", { count: "exact", head: true }),
     db.from("negotiations").select("created_at").gte("created_at", thirtyDaysAgo.toISOString()).order("created_at", { ascending: true }),

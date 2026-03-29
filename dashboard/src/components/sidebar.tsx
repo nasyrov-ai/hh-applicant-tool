@@ -83,6 +83,7 @@ function WorkerIndicator() {
     supabase
       .from("worker_status")
       .select("status, last_seen_at")
+      .order("last_seen_at", { ascending: false })
       .limit(1)
       .single()
       .then(({ data }: { data: { status: string; last_seen_at: string } | null }) => {

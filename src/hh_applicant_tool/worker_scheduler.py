@@ -88,6 +88,20 @@ class CronScheduler:
         self, command: str, args: dict, schedule_id: str
     ) -> None:
         try:
+            # Prevent duplicate commands
+            existing = (
+                self.client.table("command_queue")
+                .select("id")
+                .eq("command", command)
+                .in_("status", ["pending", "running"])
+                .execute()
+            )
+            if existing.data:
+                logger.info(
+                    "Skipping scheduled %s — already pending/running", command
+                )
+                return
+
             self.client.table("command_queue").insert(
                 {
                     "command": command,

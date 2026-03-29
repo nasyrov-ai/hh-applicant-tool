@@ -101,13 +101,41 @@ class WorkerDaemon:
         signal.signal(signal.SIGTERM, self._handle_signal)
         signal.signal(signal.SIGINT, self._handle_signal)
 
-        self._last_heartbeat = 0.0
         self._cancellation_event: threading.Event | None = None
         self._current_command_id: str | None = None
+        self._heartbeat_stop = threading.Event()
 
     def _handle_signal(self, signum: int, frame: Any) -> None:
         logger.info("Received signal %d, shutting down...", signum)
         self._running = False
+        self._heartbeat_stop.set()
+
+    def _heartbeat_loop(self) -> None:
+        """Background thread that sends heartbeats every HEARTBEAT_INTERVAL."""
+        while not self._heartbeat_stop.wait(HEARTBEAT_INTERVAL):
+            self._send_heartbeat("online")
+
+    def _cleanup_stale_commands(self) -> None:
+        """Mark commands that were running when worker crashed as failed."""
+        try:
+            result = (
+                self.supabase.table("command_queue")
+                .update(
+                    {
+                        "status": "failed",
+                        "error_message": "Worker перезапущен — команда была прервана",
+                        "completed_at": datetime.now(timezone.utc).isoformat(),
+                    }
+                )
+                .eq("status", "running")
+                .execute()
+            )
+            if result.data:
+                logger.warning(
+                    "Cleaned up %d stale running command(s)", len(result.data)
+                )
+        except Exception as ex:
+            logger.warning("Failed to cleanup stale commands: %s", ex)
 
     def run(self) -> None:
         """Main loop."""
@@ -115,8 +143,15 @@ class WorkerDaemon:
             "Worker started (id=%s, pid=%d)", self._worker_id, os.getpid()
         )
 
+        self._cleanup_stale_commands()
         self.scheduler.start()
         self._send_heartbeat("online")
+
+        # Start heartbeat in background thread so it works during command execution
+        heartbeat_thread = threading.Thread(
+            target=self._heartbeat_loop, daemon=True
+        )
+        heartbeat_thread.start()
 
         try:
             while self._running:
@@ -127,18 +162,14 @@ class WorkerDaemon:
                     else:
                         time.sleep(POLL_INTERVAL)
 
-                    # Periodic heartbeat
-                    now = time.monotonic()
-                    if now - self._last_heartbeat >= HEARTBEAT_INTERVAL:
-                        self._send_heartbeat("online")
-                        self._last_heartbeat = now
-
                 except KeyboardInterrupt:
                     break
                 except Exception as ex:
                     logger.error("Worker loop error: %s", ex)
                     time.sleep(POLL_INTERVAL)
         finally:
+            self._heartbeat_stop.set()
+            heartbeat_thread.join(timeout=5)
             self.scheduler.stop()
             self._send_heartbeat("offline")
             logger.info("Worker stopped")

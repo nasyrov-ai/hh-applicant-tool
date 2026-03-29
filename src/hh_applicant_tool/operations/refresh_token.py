@@ -34,4 +34,3 @@ class Operation(BaseOperation):
             logger.info("Токен успешно обновлен.")
         else:
             logger.info("Токен не истек, обновление не требуется.")
-            return 2
