@@ -1,6 +1,6 @@
 # HH Dashboard
 
-Веб-дашборд для визуализации данных из [hh-applicant-tool](https://github.com/s3rgeym/hh-applicant-tool).
+Веб-дашборд для визуализации данных из [hh-applicant-tool](https://github.com/nasyrov-ai/hh-applicant-tool).
 Показывает статистику по откликам, вакансиям, работодателям и резюме.
 Данные синхронизируются из локальной SQLite-базы CLI в Supabase.
 
@@ -126,4 +126,4 @@ vercel
 
 ## Лицензия
 
-Распространяется на тех же условиях, что и родительский проект [hh-applicant-tool](https://github.com/s3rgeym/hh-applicant-tool).
+Распространяется на тех же условиях, что и родительский проект [hh-applicant-tool](https://github.com/nasyrov-ai/hh-applicant-tool).

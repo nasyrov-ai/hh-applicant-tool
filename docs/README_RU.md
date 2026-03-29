@@ -112,7 +112,7 @@ pip install hh-applicant-tool
 Или из исходников:
 
 ```bash
-git clone https://github.com/s3rgeym/hh-applicant-tool.git
+git clone https://github.com/nasyrov-ai/hh-applicant-tool.git
 cd hh-applicant-tool
 pip install -e .
 ```

@@ -87,7 +87,7 @@ export default function Page() {
             <a href="#architecture" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">Architecture</a>
             <a href="#stack" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">Stack</a>
             <a
-              href="https://github.com/s3rgeym/hh-applicant-tool"
+              href="https://github.com/nasyrov-ai/hh-applicant-tool"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-80"
@@ -128,7 +128,7 @@ export default function Page() {
           {/* CTA */}
           <div className="hero-enter-d3 mt-10 flex items-center justify-center gap-3">
             <a
-              href="https://github.com/s3rgeym/hh-applicant-tool"
+              href="https://github.com/nasyrov-ai/hh-applicant-tool"
               target="_blank"
               rel="noopener noreferrer"
               className="group inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:brightness-110"
@@ -293,7 +293,7 @@ export default function Page() {
 
           <div className="mt-8">
             <a
-              href="https://github.com/s3rgeym/hh-applicant-tool"
+              href="https://github.com/nasyrov-ai/hh-applicant-tool"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:brightness-110"
@@ -311,7 +311,7 @@ export default function Page() {
               <span className="h-3 w-3 rounded-full bg-[#28c840]" />
               <span className="ml-auto font-mono text-xs text-muted-foreground/50">terminal</span>
             </div>
-            <pre className="p-5 font-mono text-sm leading-7"><span className="text-primary">$</span> <span className="text-foreground/80">git clone https://github.com/s3rgeym/hh-applicant-tool.git</span>{"\n"}<span className="text-primary">$</span> <span className="text-foreground/80">cd hh-applicant-tool</span>{"\n"}<span className="text-primary">$</span> <span className="text-foreground/80">pip install -e .</span>{"\n"}<span className="text-primary">$</span> <span className="text-foreground/80">hh-applicant-tool setup</span></pre>
+            <pre className="p-5 font-mono text-sm leading-7"><span className="text-primary">$</span> <span className="text-foreground/80">git clone https://github.com/nasyrov-ai/hh-applicant-tool.git</span>{"\n"}<span className="text-primary">$</span> <span className="text-foreground/80">cd hh-applicant-tool</span>{"\n"}<span className="text-primary">$</span> <span className="text-foreground/80">pip install -e .</span>{"\n"}<span className="text-primary">$</span> <span className="text-foreground/80">hh-applicant-tool setup</span></pre>
           </div>
         </AnimateOnScroll>
       </section>
@@ -321,7 +321,7 @@ export default function Page() {
         <div className="mx-auto flex max-w-6xl items-center justify-between text-sm text-muted-foreground">
           <span>hh-applicant-tool</span>
           <div className="flex items-center gap-4">
-            <a href="https://github.com/s3rgeym/hh-applicant-tool" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">GitHub</a>
+            <a href="https://github.com/nasyrov-ai/hh-applicant-tool" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">GitHub</a>
             <span>MIT License</span>
           </div>
         </div>

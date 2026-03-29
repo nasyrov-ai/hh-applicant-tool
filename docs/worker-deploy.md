@@ -48,7 +48,7 @@ For running the worker as a system service on a Linux server.
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/s3rgeym/hh-applicant-tool.git /opt/hh-applicant-tool
+git clone https://github.com/nasyrov-ai/hh-applicant-tool.git /opt/hh-applicant-tool
 cd /opt/hh-applicant-tool
 python3 -m venv .venv
 .venv/bin/pip install -e '.[worker]'
