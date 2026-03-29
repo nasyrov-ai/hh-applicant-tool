@@ -192,13 +192,14 @@ class WorkerDaemon:
             command = result.data[0]
 
             # Claim it atomically
+            started_at = datetime.now(timezone.utc)
             claim_result = (
                 self.supabase.table("command_queue")
                 .update(
                     {
                         "status": "running",
                         "worker_id": self._worker_id,
-                        "started_at": datetime.now(timezone.utc).isoformat(),
+                        "started_at": started_at.isoformat(),
                     }
                 )
                 .eq("id", command["id"])
@@ -322,17 +323,27 @@ class WorkerDaemon:
                 error_message = error_message or "Отменено пользователем"
             else:
                 status = "completed" if exit_code == 0 else "failed"
+
+            completed_at = datetime.now(timezone.utc)
             try:
                 self.supabase.table("command_queue").update(
                     {
                         "status": status,
                         "exit_code": exit_code,
                         "error_message": error_message,
-                        "completed_at": datetime.now(timezone.utc).isoformat(),
+                        "completed_at": completed_at.isoformat(),
                     }
                 ).eq("id", cmd_id).execute()
             except Exception as ex:
                 logger.error("Failed to update command status: %s", ex)
+
+            # Telegram notification
+            from .utils.telegram import notify_command_completed, notify_command_failed
+            duration = int((completed_at - started_at).total_seconds()) if started_at else None
+            if status == "completed":
+                notify_command_completed(cmd_name, duration)
+            elif status == "failed":
+                notify_command_failed(cmd_name, error_message or "")
 
             # Auto-sync after every operation (except sync-db itself)
             if cmd_name != "sync-db":
