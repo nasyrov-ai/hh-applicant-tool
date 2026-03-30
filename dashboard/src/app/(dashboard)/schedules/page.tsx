@@ -10,7 +10,7 @@ export default async function SchedulesPage() {
 
   const { data: schedules, error } = await supabase
     .from("cron_schedules")
-    .select("*")
+    .select("id, name, command, args, cron_expression, enabled, last_run_at, next_run_at")
     .order("created_at", { ascending: false });
 
   if (error) {

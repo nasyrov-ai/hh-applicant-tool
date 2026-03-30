@@ -48,6 +48,13 @@ export default async function NegotiationsPage({
     .order("updated_at", { ascending: false })
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
+  if (search) {
+    const parsed = parseInt(search, 10);
+    if (!isNaN(parsed)) {
+      query = query.eq("vacancy_id", parsed);
+    }
+  }
+
   if (stateFilter === "invitation") {
     query = query.or("state.eq.interview,state.like.invitation%");
   } else if (stateFilter === "discard") {

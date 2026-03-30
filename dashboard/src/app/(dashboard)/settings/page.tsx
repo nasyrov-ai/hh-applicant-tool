@@ -7,7 +7,7 @@ export const revalidate = 30;
 
 export default async function SettingsPage() {
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase.from("worker_config").select("*");
+  const { data, error } = await supabase.from("worker_config").select("key, value");
 
   if (error) {
     return (

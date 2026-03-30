@@ -177,8 +177,9 @@ function CreateScheduleForm({ onClose }: { onClose: () => void }) {
     <Card>
       <CardContent className="space-y-3">
         <div>
-          <label className="mb-1 block text-xs text-muted-foreground">Название</label>
+          <label htmlFor="schedule-name" className="mb-1 block text-xs text-muted-foreground">Название</label>
           <Input
+            id="schedule-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -188,7 +189,7 @@ function CreateScheduleForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <div>
-          <label className="mb-1 block text-xs text-muted-foreground">Команда</label>
+          <label htmlFor="schedule-command" className="mb-1 block text-xs text-muted-foreground">Команда</label>
           <Select value={command} onValueChange={setCommand}>
             <SelectTrigger>
               <SelectValue />
@@ -204,8 +205,9 @@ function CreateScheduleForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <div>
-          <label className="mb-1 block text-xs text-muted-foreground">Cron выражение</label>
+          <label htmlFor="schedule-cron" className="mb-1 block text-xs text-muted-foreground">Cron выражение</label>
           <Input
+            id="schedule-cron"
             type="text"
             value={cron}
             onChange={(e) => setCron(e.target.value)}

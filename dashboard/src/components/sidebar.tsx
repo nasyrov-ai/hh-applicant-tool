@@ -102,10 +102,10 @@ function WorkerIndicator() {
 
   const label =
     status === "online"
-      ? "Worker Online"
+      ? "Воркер онлайн"
       : status === "offline"
-        ? "Worker Offline"
-        : "Worker —";
+        ? "Воркер офлайн"
+        : "Воркер —";
 
   return (
     <div className="flex items-center gap-2.5">
@@ -157,12 +157,12 @@ export function MobileHeader() {
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="h-8 w-8">
             <Menu className="h-5 w-5" />
-            <span className="sr-only">Open navigation</span>
+            <span className="sr-only">Открыть навигацию</span>
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-56 bg-sidebar p-0">
           <SheetHeader className="sr-only">
-            <SheetTitle>Navigation</SheetTitle>
+            <SheetTitle>Навигация</SheetTitle>
           </SheetHeader>
           <SidebarContent onNavigate={() => setOpen(false)} />
         </SheetContent>

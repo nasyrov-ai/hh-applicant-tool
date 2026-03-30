@@ -56,7 +56,7 @@ export function CommandPalette() {
     <CommandDialog
       open={open}
       onOpenChange={setOpen}
-      title="Command Palette"
+      title="Командная палитра"
       description="Поиск страниц и операций"
       showCloseButton={false}
     >

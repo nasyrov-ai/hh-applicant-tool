@@ -16,7 +16,7 @@ export default async function LogsPage() {
 
   const { data: commands, error } = await supabase
     .from("command_queue")
-    .select("*")
+    .select("id, command, args, status, error_message, created_at, started_at, completed_at")
     .order("created_at", { ascending: false })
     .limit(50);
 

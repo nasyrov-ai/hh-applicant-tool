@@ -174,7 +174,7 @@ function FieldInput({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs text-muted-foreground">
+      <label htmlFor={`field-${field.key}`} className="mb-1 block text-xs text-muted-foreground">
         {field.label}
       </label>
       {field.description && (
@@ -183,6 +183,7 @@ function FieldInput({
 
       {field.type === "textarea" ? (
         <Textarea
+          id={`field-${field.key}`}
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value || null)}
           placeholder={field.placeholder}
@@ -207,6 +208,7 @@ function FieldInput({
         </Select>
       ) : field.type === "tags" ? (
         <Input
+          id={`field-${field.key}`}
           type="text"
           value={Array.isArray(value) ? (value as string[]).join(", ") : (value as string) ?? ""}
           onChange={(e) => {
@@ -220,6 +222,7 @@ function FieldInput({
         />
       ) : field.type === "number" ? (
         <Input
+          id={`field-${field.key}`}
           type="number"
           value={(value as number) ?? ""}
           onChange={(e) =>
@@ -229,6 +232,7 @@ function FieldInput({
         />
       ) : (
         <Input
+          id={`field-${field.key}`}
           type="text"
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value || null)}

@@ -45,7 +45,9 @@ ALLOWED_COMMANDS = {
     "whoami",
 }
 
-POLL_INTERVAL = 3.0  # seconds
+POLL_INTERVAL = 3.0  # seconds (base; increases with backoff when idle)
+POLL_INTERVAL_MAX = 30.0  # seconds (cap for backoff)
+POLL_BACKOFF_FACTOR = 1.5
 HEARTBEAT_INTERVAL = 30.0  # seconds
 MAX_EXECUTION_TIME = 600  # 10 minutes
 CANCEL_CHECK_INTERVAL = 2.0  # seconds
@@ -103,6 +105,7 @@ class WorkerDaemon:
 
         self._cancellation_event: threading.Event | None = None
         self._current_command_id: str | None = None
+        self._current_cmd_thread: threading.Thread | None = None
         self._heartbeat_stop = threading.Event()
 
     def _handle_signal(self, signum: int, frame: Any) -> None:
@@ -153,20 +156,35 @@ class WorkerDaemon:
         )
         heartbeat_thread.start()
 
+        current_interval = POLL_INTERVAL
         try:
             while self._running:
                 try:
+                    # Zombie thread protection: skip cycle if previous command thread is still alive
+                    if self._current_cmd_thread is not None and self._current_cmd_thread.is_alive():
+                        logger.warning(
+                            "Previous command thread still alive, skipping poll cycle"
+                        )
+                        time.sleep(current_interval)
+                        continue
+
                     command = self._poll_command()
                     if command:
+                        current_interval = POLL_INTERVAL  # Reset backoff
                         self._execute_command(command)
                     else:
-                        time.sleep(POLL_INTERVAL)
+                        time.sleep(current_interval)
+                        # Exponential backoff when idle
+                        current_interval = min(
+                            current_interval * POLL_BACKOFF_FACTOR,
+                            POLL_INTERVAL_MAX,
+                        )
 
                 except KeyboardInterrupt:
                     break
                 except Exception as ex:
                     logger.error("Worker loop error: %s", ex)
-                    time.sleep(POLL_INTERVAL)
+                    time.sleep(current_interval)
         finally:
             self._heartbeat_stop.set()
             heartbeat_thread.join(timeout=5)
@@ -305,6 +323,7 @@ class WorkerDaemon:
                     cmd_error_holder.append(e)
 
             cmd_thread = threading.Thread(target=_run_tool, daemon=True)
+            self._current_cmd_thread = cmd_thread
             cmd_thread.start()
             cmd_thread.join(timeout=MAX_EXECUTION_TIME)
 

@@ -24,7 +24,7 @@ const OverviewChart = dynamic(
   }
 );
 
-export const metadata = { title: "Overview — HH Dashboard" };
+export const metadata = { title: "Обзор — HH Dashboard" };
 export const revalidate = 60;
 
 async function getStats(supabase: Awaited<ReturnType<typeof createServerSupabase>>) {
@@ -104,7 +104,7 @@ export default async function OverviewPage() {
   } catch (e) {
     return (
       <div className="animate-fade-in">
-        <PageHeader title="Overview" description="Общая статистика по откликам и вакансиям" />
+        <PageHeader title="Обзор" description="Общая статистика по откликам и вакансиям" />
         <Card className="border-destructive/50">
           <CardContent className="flex h-40 items-center justify-center">
             <p className="text-sm text-destructive">
@@ -124,7 +124,7 @@ export default async function OverviewPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader
-        title="Overview"
+        title="Обзор"
         description="Общая статистика по откликам и вакансиям"
       />
 

@@ -15,7 +15,7 @@ export default async function ResumesPage() {
 
   const { data: resumes, error } = await supabase
     .from("resumes")
-    .select("*")
+    .select("id, title, status_id, status_name, alternate_url, can_publish_or_update, total_views, new_views, updated_at")
     .order("updated_at", { ascending: false })
     .limit(50);
 
