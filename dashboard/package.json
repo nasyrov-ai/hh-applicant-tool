@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev & (cd .. && set -a && source .env.worker && set +a && .venv/bin/python -m hh_applicant_tool.worker) & wait",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
