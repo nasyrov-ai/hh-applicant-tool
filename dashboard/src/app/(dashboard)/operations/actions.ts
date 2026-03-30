@@ -35,6 +35,9 @@ export async function executeCommand(
     throw new Error(parsed.error.issues.map((i) => i.message).join(", "));
   }
 
+  const validatedCommand = parsed.data.command;
+  const validatedArgs = parsed.data.args;
+
   await assertAuth();
 
   const supabase = await createServerSupabase();
@@ -43,17 +46,17 @@ export async function executeCommand(
   const { data: existing } = await supabase
     .from("command_queue")
     .select("id")
-    .eq("command", command)
+    .eq("command", validatedCommand)
     .in("status", ["pending", "running"])
     .limit(1);
 
   if (existing && existing.length > 0) {
-    throw new Error(`Команда "${command}" уже выполняется или в очереди`);
+    throw new Error(`Команда "${validatedCommand}" уже выполняется или в очереди`);
   }
 
   const { data, error } = await supabase
     .from("command_queue")
-    .insert({ command, args, status: "pending" })
+    .insert({ command: validatedCommand, args: validatedArgs, status: "pending" })
     .select()
     .single();
 

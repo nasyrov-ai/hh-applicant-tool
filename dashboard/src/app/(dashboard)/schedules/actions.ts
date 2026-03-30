@@ -8,9 +8,18 @@ import { assertAuth } from "@/lib/auth";
 // Matches standard 5-field cron: minute hour dom month dow
 const cronRegex = /^(\*|[\d,\-\/]+)\s+(\*|[\d,\-\/]+)\s+(\*|[\d,\-\/]+)\s+(\*|[\d,\-\/]+)\s+(\*|[\d,\-\/]+)$/;
 
+const ALLOWED_COMMANDS = [
+  "apply-vacancies",
+  "reply-employers",
+  "update-resumes",
+  "clear-negotiations",
+  "sync-db",
+  "refresh-token",
+] as const;
+
 const createScheduleSchema = z.object({
   name: z.string().min(1).max(100),
-  command: z.string().min(1),
+  command: z.enum(ALLOWED_COMMANDS),
   args: z.record(z.string(), z.unknown()).default({}),
   cron_expression: z.string().regex(cronRegex, "Invalid cron expression"),
 });

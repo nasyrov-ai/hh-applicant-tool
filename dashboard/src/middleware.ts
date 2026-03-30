@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { makeAuthToken } from "@/lib/auth";
+import { makeAuthToken } from "@/lib/auth-token";
 
 export async function middleware(request: NextRequest) {
   // Skip auth for login page and static assets

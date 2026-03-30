@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { makeAuthToken } from "@/lib/auth";
+import { makeAuthToken } from "@/lib/auth-token";
 
 // Simple in-memory rate limiter: max 5 attempts per 15 minutes per IP
 const RATE_LIMIT_MAX = 5;
@@ -10,11 +10,19 @@ function isRateLimited(ip: string): boolean {
   const now = Date.now();
   const entry = loginAttempts.get(ip);
   if (!entry || now >= entry.resetAt) {
-    loginAttempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
     return false;
   }
-  entry.count++;
-  return entry.count > RATE_LIMIT_MAX;
+  return entry.count >= RATE_LIMIT_MAX;
+}
+
+function recordFailedAttempt(ip: string): void {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+  if (!entry || now >= entry.resetAt) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+  } else {
+    entry.count++;
+  }
 }
 
 export async function POST(request: Request) {
@@ -30,7 +38,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const { password } = await request.json();
+  let password: string;
+  try {
+    ({ password } = await request.json());
+  } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
   const secret = process.env.DASHBOARD_SECRET;
 
   if (!secret) {
@@ -46,6 +60,7 @@ export async function POST(request: Request) {
   }
 
   if (password !== secret) {
+    recordFailedAttempt(ip);
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

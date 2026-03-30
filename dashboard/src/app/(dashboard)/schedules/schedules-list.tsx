@@ -158,14 +158,18 @@ function CreateScheduleForm({ onClose }: { onClose: () => void }) {
   function handleSubmit() {
     if (!name.trim()) return;
     startCreate(async () => {
-      await createSchedule({
-        name: name.trim(),
-        command,
-        args: {},
-        cron_expression: cron,
-      });
-      toast.success("Расписание создано");
-      onClose();
+      try {
+        await createSchedule({
+          name: name.trim(),
+          command,
+          args: {},
+          cron_expression: cron,
+        });
+        toast.success("Расписание создано");
+        onClose();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось создать расписание");
+      }
     });
   }
 
