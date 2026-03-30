@@ -551,7 +551,7 @@ class Operation(BaseOperation):
                 letter_required = vacancy.get(
                     "response_letter_required"
                 )
-                if self.force_message or letter_required:
+                if self.force_message or letter_required or self.openai_chat:
                     if self.openai_chat:
                         snippet = vacancy.get("snippet", {})
                         requirement = sanitize_vacancy_text(
