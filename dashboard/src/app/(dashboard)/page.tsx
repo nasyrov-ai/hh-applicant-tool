@@ -1,5 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase-server";
-import { formatDateTime, stateLabel, stateColor, formatNumber } from "@/lib/utils";
+import { formatDateTime, stateLabel, stateColor, formatNumber, stateBadgeVariant } from "@/lib/utils";
+import type { RecentActivity } from "@/lib/types";
 import { KpiCard } from "@/components/kpi-card";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -85,13 +86,6 @@ async function getStats(supabase: Awaited<ReturnType<typeof createServerSupabase
   };
 }
 
-function stateBadgeVariant(state: string): "success" | "destructive" | "default" | "muted" {
-  if (state === "interview") return "success";
-  if (state === "discard") return "destructive";
-  if (state === "response" || state === "active") return "default";
-  return "muted";
-}
-
 export default async function OverviewPage() {
   const supabase = await createServerSupabase();
 
@@ -171,7 +165,7 @@ export default async function OverviewPage() {
             {stats.recentActivity.length === 0 && (
               <p className="py-8 text-center text-sm text-muted-foreground">Нет данных</p>
             )}
-            {stats.recentActivity.map((item: any) => (
+            {stats.recentActivity.map((item: RecentActivity) => (
               <div
                 key={item.id}
                 className="group flex items-center justify-between rounded-lg px-3 py-2.5 transition-all duration-200 hover:bg-muted/50"

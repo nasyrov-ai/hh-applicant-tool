@@ -3,20 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  MessagesSquare,
-  Briefcase,
-  Building2,
-  FileText,
-  Play,
-  ScrollText,
-  Ban,
-  Settings,
-  CalendarClock,
-  Menu,
-  Command,
-} from "lucide-react";
+import { Menu, Command } from "lucide-react";
+import { NAV_ITEMS } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { createBrowserSupabase } from "@/lib/supabase-client";
 import { Button } from "@/components/ui/button";
@@ -30,25 +18,13 @@ import {
 } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-const nav = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
-  { href: "/negotiations", label: "Отклики", icon: MessagesSquare },
-  { href: "/vacancies", label: "Вакансии", icon: Briefcase },
-  { href: "/employers", label: "Работодатели", icon: Building2 },
-  { href: "/resumes", label: "Резюме", icon: FileText },
-  { href: "/operations", label: "Операции", icon: Play },
-  { href: "/logs", label: "Логи", icon: ScrollText },
-  { href: "/blacklist", label: "Блэклист", icon: Ban },
-  { href: "/settings", label: "Настройки", icon: Settings },
-  { href: "/schedules", label: "Расписание", icon: CalendarClock },
-];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
     <nav className="flex-1 space-y-0.5 px-3 py-2">
-      {nav.map(({ href, label, icon: Icon }) => {
+      {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
         const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
         return (
           <Link
@@ -101,13 +77,16 @@ function WorkerIndicator() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "worker_status" },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (payload: any) => {
-          const row = payload.new as any;
-          if (row?.status) setStatus(row.status);
+        (payload: { new: { status: string; last_seen_at: string } }) => {
+          const row = payload.new;
+          if (row?.status) setStatus(row.status as "online" | "offline");
         }
       )
-      .subscribe();
+      .subscribe((status: string) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          setStatus("unknown");
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

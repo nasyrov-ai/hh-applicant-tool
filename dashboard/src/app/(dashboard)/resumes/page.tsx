@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime, formatNumber } from "@/lib/utils";
+import type { Resume } from "@/lib/types";
 import { Eye, ExternalLink, FileText, RefreshCw } from "lucide-react";
 
 export const revalidate = 60;
@@ -14,7 +15,8 @@ export default async function ResumesPage() {
   const { data: resumes, error } = await supabase
     .from("resumes")
     .select("*")
-    .order("updated_at", { ascending: false });
+    .order("updated_at", { ascending: false })
+    .limit(50);
 
   if (error) {
     return (
@@ -44,7 +46,7 @@ export default async function ResumesPage() {
             <EmptyState icon={FileText} title="Нет резюме" />
           </div>
         )}
-        {(resumes || []).map((r: any) => (
+        {(resumes || []).map((r: Resume) => (
           <Card
             key={r.id}
             className="gap-0 py-0 transition-colors hover:border-border/80"

@@ -7,11 +7,12 @@ import { Plus, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import type { EmployerSearchResult } from "@/lib/types";
 
 export function BlacklistActions() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<EmployerSearchResult[]>([]);
   const [reason, setReason] = useState("");
   const [searching, startSearch] = useTransition();
   const [adding, startAdd] = useTransition();
@@ -32,7 +33,7 @@ export function BlacklistActions() {
     }, 300);
   }, []);
 
-  function handleAdd(employer: any) {
+  function handleAdd(employer: EmployerSearchResult) {
     startAdd(async () => {
       await addToBlacklist(employer.id, employer.name, reason);
       toast.success("Добавлен в блэклист", { description: employer.name });

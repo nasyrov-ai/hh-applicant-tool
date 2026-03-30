@@ -3,22 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  LayoutDashboard,
-  MessagesSquare,
-  Briefcase,
-  Building2,
-  FileText,
-  Play,
-  ScrollText,
-  Ban,
-  Settings,
-  CalendarClock,
   Send,
   RefreshCw,
   Trash2,
   Database,
   Key,
 } from "lucide-react";
+import { NAV_ITEMS } from "@/lib/navigation";
 import {
   CommandDialog,
   CommandEmpty,
@@ -29,18 +20,6 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 
-const PAGES = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
-  { href: "/negotiations", label: "Отклики", icon: MessagesSquare },
-  { href: "/vacancies", label: "Вакансии", icon: Briefcase },
-  { href: "/employers", label: "Работодатели", icon: Building2 },
-  { href: "/resumes", label: "Резюме", icon: FileText },
-  { href: "/operations", label: "Операции", icon: Play },
-  { href: "/logs", label: "Логи", icon: ScrollText },
-  { href: "/blacklist", label: "Блэклист", icon: Ban },
-  { href: "/settings", label: "Настройки", icon: Settings },
-  { href: "/schedules", label: "Расписание", icon: CalendarClock },
-];
 
 const QUICK_ACTIONS = [
   { id: "apply", label: "Рассылка откликов", icon: Send, href: "/operations" },
@@ -85,7 +64,7 @@ export function CommandPalette() {
       <CommandList>
         <CommandEmpty>Ничего не найдено</CommandEmpty>
         <CommandGroup heading="Страницы">
-          {PAGES.map(({ href, label, icon: Icon }) => (
+          {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
             <CommandItem
               key={href}
               onSelect={() => runCommand(() => router.push(href))}

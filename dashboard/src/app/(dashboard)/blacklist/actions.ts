@@ -2,12 +2,14 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
+import { assertAuth } from "@/lib/auth";
 
 export async function addToBlacklist(
   employerId: number,
   employerName: string,
   reason: string
 ) {
+  await assertAuth();
   const supabase = await createServerSupabase();
 
   const { error } = await supabase.from("blacklist").upsert({
@@ -21,6 +23,7 @@ export async function addToBlacklist(
 }
 
 export async function removeFromBlacklist(employerId: number) {
+  await assertAuth();
   const supabase = await createServerSupabase();
 
   const { error } = await supabase
@@ -35,12 +38,15 @@ export async function removeFromBlacklist(employerId: number) {
 export async function searchEmployers(query: string) {
   if (!query || query.length < 2) return [];
 
+  await assertAuth();
+
+  const escaped = query.replace(/[%_\\]/g, "\\$&");
   const supabase = await createServerSupabase();
 
   const { data } = await supabase
     .from("employers")
     .select("id, name, alternate_url")
-    .ilike("name", `%${query}%`)
+    .ilike("name", `%${escaped}%`)
     .limit(10);
 
   return data || [];

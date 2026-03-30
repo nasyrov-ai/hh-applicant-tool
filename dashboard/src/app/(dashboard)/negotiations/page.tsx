@@ -11,7 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDateTime, stateLabel } from "@/lib/utils";
+import { formatDateTime, stateLabel, stateBadgeVariant } from "@/lib/utils";
+import type { Negotiation } from "@/lib/types";
 import { MessagesSquare } from "lucide-react";
 import { Pagination } from "@/components/pagination";
 import { NegotiationsFilter } from "./filter";
@@ -25,13 +26,6 @@ interface SearchParams {
 }
 
 const PAGE_SIZE = 25;
-
-function stateBadgeVariant(state: string): "success" | "destructive" | "default" | "warning" | "muted" {
-  if (state === "interview") return "success";
-  if (state === "discard") return "destructive";
-  if (state === "response" || state === "active") return "default";
-  return "muted";
-}
 
 export default async function NegotiationsPage({
   searchParams,
@@ -110,7 +104,7 @@ export default async function NegotiationsPage({
                   </TableCell>
                 </TableRow>
               )}
-              {(negotiations || []).map((n: any) => (
+              {(negotiations || []).map((n: Negotiation) => (
                 <TableRow key={n.id} className="hover:bg-muted/50">
                   <TableCell className="max-w-xs truncate">
                     #{n.vacancy_id}

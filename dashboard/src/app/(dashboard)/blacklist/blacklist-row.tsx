@@ -6,8 +6,9 @@ import { formatDateTime } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import type { BlacklistEntry } from "@/lib/types";
 
-export function BlacklistRow({ item }: { item: any }) {
+export function BlacklistRow({ item }: { item: BlacklistEntry }) {
   const [isPending, startTransition] = useTransition();
 
   function handleRemove() {

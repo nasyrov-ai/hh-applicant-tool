@@ -2,6 +2,7 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
+import { assertAuth } from "@/lib/auth";
 
 export async function createSchedule(data: {
   name: string;
@@ -9,6 +10,7 @@ export async function createSchedule(data: {
   args: Record<string, unknown>;
   cron_expression: string;
 }) {
+  await assertAuth();
   const supabase = await createServerSupabase();
 
   const { error } = await supabase.from("cron_schedules").insert({
@@ -24,6 +26,7 @@ export async function createSchedule(data: {
 }
 
 export async function toggleSchedule(id: string, enabled: boolean) {
+  await assertAuth();
   const supabase = await createServerSupabase();
 
   const { error } = await supabase
@@ -36,6 +39,7 @@ export async function toggleSchedule(id: string, enabled: boolean) {
 }
 
 export async function deleteSchedule(id: string) {
+  await assertAuth();
   const supabase = await createServerSupabase();
 
   const { error } = await supabase

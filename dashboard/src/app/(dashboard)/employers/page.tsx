@@ -5,6 +5,7 @@ import { Pagination } from "@/components/pagination";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Building2, ExternalLink, Globe, Mail, MapPin } from "lucide-react";
+import type { Employer, EmployerSite } from "@/lib/types";
 
 export const revalidate = 60;
 
@@ -45,7 +46,7 @@ export default async function EmployersPage({
   }
 
   // Получаем информацию о сайтах
-  const employerIds = (employers || []).map((e: any) => e.id);
+  const employerIds = (employers || []).map((e: Employer) => e.id);
   const { data: sites } = employerIds.length > 0
     ? await supabase
         .from("employer_sites")
@@ -53,8 +54,8 @@ export default async function EmployersPage({
         .in("employer_id", employerIds)
     : { data: [] };
 
-  const sitesMap: Record<string, any> = {};
-  (sites || []).forEach((s: any) => {
+  const sitesMap: Record<number, EmployerSite> = {};
+  (sites || []).forEach((s: EmployerSite) => {
     sitesMap[s.employer_id] = s;
   });
 
@@ -71,7 +72,7 @@ export default async function EmployersPage({
         {(!employers || employers.length === 0) && (
           <EmptyState icon={Building2} title="Нет работодателей" />
         )}
-        {(employers || []).map((emp: any) => {
+        {(employers || []).map((emp: Employer) => {
           const site = sitesMap[emp.id];
           return (
             <Card
@@ -98,7 +99,7 @@ export default async function EmployersPage({
                       )}
                       {(emp.site_url || site?.site_url) && (
                         <a
-                          href={emp.site_url || site?.site_url}
+                          href={emp.site_url || site?.site_url || undefined}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-primary hover:underline"

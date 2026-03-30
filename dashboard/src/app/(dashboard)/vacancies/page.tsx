@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatSalary, formatDate, experienceLabel } from "@/lib/utils";
+import type { Vacancy } from "@/lib/types";
 import { Pagination } from "@/components/pagination";
 import { VacanciesFilter } from "./filter";
 import { Briefcase, ExternalLink, MapPin, Wifi } from "lucide-react";
@@ -108,7 +109,7 @@ export default async function VacanciesPage({
                   </TableCell>
                 </TableRow>
               )}
-              {(vacancies || []).map((v: any) => (
+              {(vacancies || []).map((v: Vacancy) => (
                 <TableRow key={v.id} className="hover:bg-muted/50">
                   <TableCell className="max-w-sm">
                     <div className="flex items-center gap-2">

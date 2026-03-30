@@ -5,6 +5,7 @@ import { BlacklistActions } from "./blacklist-actions";
 import { BlacklistRow } from "./blacklist-row";
 import { Card, CardContent } from "@/components/ui/card";
 import { Ban } from "lucide-react";
+import type { BlacklistEntry } from "@/lib/types";
 
 export const revalidate = 30;
 
@@ -43,7 +44,7 @@ export default async function BlacklistPage() {
         {(!blacklisted || blacklisted.length === 0) && (
           <EmptyState icon={Ban} title="Блэклист пуст" description="Работодатели не заблокированы" />
         )}
-        {(blacklisted || []).map((item: any) => (
+        {(blacklisted || []).map((item: BlacklistEntry) => (
           <BlacklistRow key={item.employer_id} item={item} />
         ))}
       </div>
