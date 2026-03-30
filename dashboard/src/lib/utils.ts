@@ -55,7 +55,7 @@ export function stateLabel(state: string): string {
 }
 
 export function stateColor(state: string): string {
-  if (state === "interview" || state.startsWith("inv")) return "text-success";
+  if (state === "interview" || state.startsWith("invitation")) return "text-success";
   if (state === "discard") return "text-destructive";
   if (state === "active" || state === "response") return "text-accent";
   return "text-muted-foreground";
@@ -73,7 +73,7 @@ export function experienceLabel(exp: string | null | undefined): string {
 }
 
 export function stateBadgeVariant(state: string): "success" | "destructive" | "default" | "warning" | "muted" {
-  if (state === "interview" || state.startsWith("inv")) return "success";
+  if (state === "interview" || state.startsWith("invitation")) return "success";
   if (state === "discard") return "destructive";
   if (state === "response" || state === "active") return "default";
   return "muted";

@@ -38,6 +38,7 @@ export function CommandStatus({ commandId, onComplete }: CommandStatusProps) {
   useEffect(() => {
     const supabase = createBrowserSupabase();
     let channel: ReturnType<typeof supabase.channel> | null = null;
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
 
     function isTerminal(s: Status) {
       return s === "completed" || s === "failed" || s === "cancelled";
@@ -87,18 +88,28 @@ export function CommandStatus({ commandId, onComplete }: CommandStatusProps) {
       )
       .subscribe((subStatus: string) => {
         if (subStatus === "CHANNEL_ERROR" || subStatus === "TIMED_OUT") {
-          // Fallback: poll once on disconnect
-          supabase.from("command_queue").select("status, error_message")
-            .eq("id", commandId).single()
-            .then(({ data }: { data: { status: string; error_message: string | null } | null }) => {
-              if (data) handleStatus(data.status as Status, data.error_message);
-            });
+          // Fallback: poll every 3s until terminal state
+          pollTimer = setInterval(async () => {
+            const { data } = await supabase.from("command_queue")
+              .select("status, error_message")
+              .eq("id", commandId).single() as { data: { status: string; error_message: string | null } | null };
+            if (data) {
+              handleStatus(data.status as Status, data.error_message);
+              if (isTerminal(data.status as Status) && pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+              }
+            }
+          }, 3000);
         }
       });
 
     return () => {
       if (channel) {
         supabase.removeChannel(channel);
+      }
+      if (pollTimer) {
+        clearInterval(pollTimer);
       }
     };
   }, [commandId]); // onComplete excluded — stored in ref

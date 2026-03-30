@@ -41,7 +41,7 @@ async function getStats(supabase: Awaited<ReturnType<typeof createServerSupabase
     recentActivityResult,
   ] = await Promise.all([
     db.from("negotiations").select("*", { count: "exact", head: true }),
-    db.from("negotiations").select("*", { count: "exact", head: true }).like("state", "inv%"),
+    db.from("negotiations").select("*", { count: "exact", head: true }).or("state.eq.interview,state.like.invitation%"),
     db.from("negotiations").select("*", { count: "exact", head: true }).eq("state", "discard"),
     db.from("vacancies").select("*", { count: "exact", head: true }),
     db.from("negotiations").select("created_at").gte("created_at", thirtyDaysAgo.toISOString()).order("created_at", { ascending: true }),
@@ -62,25 +62,25 @@ async function getStats(supabase: Awaited<ReturnType<typeof createServerSupabase
     throw new Error(`Supabase error: ${message}`);
   }
 
+  function dayKey(d: Date): string {
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    return `${dd}.${mm}`;
+  }
+
   const byDay: Record<string, number> = {};
   (recentNegotiationsResult.data || []).forEach((n) => {
-    const day = new Date(n.created_at).toLocaleDateString("ru-RU", {
-      day: "2-digit",
-      month: "2-digit",
-    });
-    byDay[day] = (byDay[day] || 0) + 1;
+    const key = dayKey(new Date(n.created_at));
+    byDay[key] = (byDay[key] || 0) + 1;
   });
 
   // Fill all 30 days (including days with 0 applications)
   const chartData: { date: string; count: number }[] = [];
   const now = new Date();
-  for (let i = 30; i >= 0; i--) {
+  for (let i = 29; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
-    const key = d.toLocaleDateString("ru-RU", {
-      day: "2-digit",
-      month: "2-digit",
-    });
+    const key = dayKey(d);
     chartData.push({ date: key, count: byDay[key] || 0 });
   }
 
