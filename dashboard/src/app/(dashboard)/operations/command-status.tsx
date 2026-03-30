@@ -78,15 +78,23 @@ export function CommandStatus({ commandId, onComplete }: CommandStatusProps) {
           table: "command_queue",
           filter: `id=eq.${commandId}`,
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (payload: any) => {
+        (payload: { new: { status: string; error_message: string | null } }) => {
           handleStatus(
             payload.new.status as Status,
-            payload.new.error_message as string | null
+            payload.new.error_message
           );
         }
       )
-      .subscribe();
+      .subscribe((subStatus: string) => {
+        if (subStatus === "CHANNEL_ERROR" || subStatus === "TIMED_OUT") {
+          // Fallback: poll once on disconnect
+          supabase.from("command_queue").select("status, error_message")
+            .eq("id", commandId).single()
+            .then(({ data }: { data: { status: string; error_message: string | null } | null }) => {
+              if (data) handleStatus(data.status as Status, data.error_message);
+            });
+        }
+      });
 
     return () => {
       if (channel) {

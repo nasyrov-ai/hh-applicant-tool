@@ -1,6 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { PageHeader } from "@/components/page-header";
-import { formatDateTime } from "@/lib/utils";
 import { SchedulesList } from "./schedules-list";
 
 export const revalidate = 30;

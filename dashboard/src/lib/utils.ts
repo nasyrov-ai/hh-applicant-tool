@@ -73,7 +73,7 @@ export function experienceLabel(exp: string | null | undefined): string {
 }
 
 export function stateBadgeVariant(state: string): "success" | "destructive" | "default" | "warning" | "muted" {
-  if (state === "interview") return "success";
+  if (state === "interview" || state.startsWith("inv")) return "success";
   if (state === "discard") return "destructive";
   if (state === "response" || state === "active") return "default";
   return "muted";

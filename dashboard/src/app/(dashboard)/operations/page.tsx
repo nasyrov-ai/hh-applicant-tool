@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { CommandStatus } from "./command-status";
@@ -95,15 +95,23 @@ export default function OperationsPage() {
   >({});
   const [loadingCommand, setLoadingCommand] = useState<string | null>(null);
 
+  const timeoutIds = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+
   // Load active commands on mount (survives page reload)
   useEffect(() => {
-    getActiveCommands().then((active) => {
-      const map: Record<string, string> = {};
-      for (const cmd of active) {
-        map[cmd.command] = cmd.id;
-      }
-      setRunningCommands((prev) => ({ ...map, ...prev }));
-    });
+    getActiveCommands()
+      .then((active) => {
+        const map: Record<string, string> = {};
+        for (const cmd of active) {
+          map[cmd.command] = cmd.id;
+        }
+        setRunningCommands((prev) => ({ ...prev, ...map }));
+      })
+      .catch(() => { /* silent: commands will show as not running */ });
+
+    return () => {
+      timeoutIds.current.forEach(clearTimeout);
+    };
   }, []);
 
   async function handleRun(op: OperationDef, formArgs: Record<string, unknown>) {
@@ -114,8 +122,9 @@ export default function OperationsPage() {
       setRunningCommands((prev) => ({ ...prev, [op.command]: result.id }));
       toast.success("Команда отправлена", { description: op.label });
     } catch (err) {
-      console.error(err);
-      toast.error("Не удалось запустить команду");
+      toast.error("Не удалось запустить команду", {
+        description: (err as Error).message,
+      });
     } finally {
       setLoadingCommand(null);
     }
@@ -123,13 +132,15 @@ export default function OperationsPage() {
 
   function handleComplete(command: string) {
     // Keep showing status for 5 seconds after completion
-    setTimeout(() => {
+    const id = setTimeout(() => {
+      timeoutIds.current.delete(id);
       setRunningCommands((prev) => {
         const next = { ...prev };
         delete next[command];
         return next;
       });
     }, 5000);
+    timeoutIds.current.add(id);
   }
 
   return (

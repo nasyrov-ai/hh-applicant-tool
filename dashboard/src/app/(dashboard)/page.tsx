@@ -71,10 +71,18 @@ async function getStats(supabase: Awaited<ReturnType<typeof createServerSupabase
     byDay[day] = (byDay[day] || 0) + 1;
   });
 
-  const chartData = Object.entries(byDay).map(([date, count]) => ({
-    date,
-    count,
-  }));
+  // Fill all 30 days (including days with 0 applications)
+  const chartData: { date: string; count: number }[] = [];
+  const now = new Date();
+  for (let i = 30; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const key = d.toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+    });
+    chartData.push({ date: key, count: byDay[key] || 0 });
+  }
 
   return {
     totalNegotiations: totalNegotiationsResult.count || 0,

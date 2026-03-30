@@ -58,19 +58,13 @@ export function Pagination({ currentPage, totalPages, baseHref, params }: Pagina
       aria-label="Pagination"
       className="mt-4 flex items-center justify-center gap-1"
     >
-      <Button
-        variant="ghost"
-        size="sm"
-        asChild
-        disabled={currentPage <= 1}
-      >
-        <a
-          href={currentPage > 1 ? buildHref(baseHref, currentPage - 1, params) : undefined}
-          aria-disabled={currentPage <= 1}
-        >
-          &lsaquo;
-        </a>
-      </Button>
+      {currentPage > 1 ? (
+        <Button variant="ghost" size="sm" asChild>
+          <a href={buildHref(baseHref, currentPage - 1, params)}>&lsaquo;</a>
+        </Button>
+      ) : (
+        <Button variant="ghost" size="sm" disabled>&lsaquo;</Button>
+      )}
 
       {pages.map((p, i) =>
         p === "ellipsis" ? (
@@ -97,23 +91,13 @@ export function Pagination({ currentPage, totalPages, baseHref, params }: Pagina
         )
       )}
 
-      <Button
-        variant="ghost"
-        size="sm"
-        asChild
-        disabled={currentPage >= totalPages}
-      >
-        <a
-          href={
-            currentPage < totalPages
-              ? buildHref(baseHref, currentPage + 1, params)
-              : undefined
-          }
-          aria-disabled={currentPage >= totalPages}
-        >
-          &rsaquo;
-        </a>
-      </Button>
+      {currentPage < totalPages ? (
+        <Button variant="ghost" size="sm" asChild>
+          <a href={buildHref(baseHref, currentPage + 1, params)}>&rsaquo;</a>
+        </Button>
+      ) : (
+        <Button variant="ghost" size="sm" disabled>&rsaquo;</Button>
+      )}
     </nav>
   );
 }

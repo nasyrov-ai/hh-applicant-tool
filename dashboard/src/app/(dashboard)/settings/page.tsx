@@ -20,7 +20,7 @@ export default async function SettingsPage() {
   }
 
   const settings: Record<string, unknown> = {};
-  (data || []).forEach((row: any) => {
+  (data || []).forEach((row: { key: string; value: unknown }) => {
     settings[row.key] = row.value;
   });
 

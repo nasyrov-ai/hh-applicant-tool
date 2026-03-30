@@ -48,11 +48,11 @@ export default async function NegotiationsPage({
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
   if (stateFilter === "invitation") {
-    query = query.eq("state", "interview");
+    query = query.like("state", "inv%");
   } else if (stateFilter === "discard") {
     query = query.eq("state", "discard");
   } else if (stateFilter === "active") {
-    query = query.not("state", "eq", "discard").not("state", "eq", "interview");
+    query = query.not("state", "eq", "discard").not("state", "like", "inv%");
   }
 
   const { data: negotiations, count, error } = await query;
