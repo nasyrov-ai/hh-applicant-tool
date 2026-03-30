@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-async function makeAuthToken(secret: string): Promise<string> {
+export async function makeAuthToken(secret: string): Promise<string> {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",

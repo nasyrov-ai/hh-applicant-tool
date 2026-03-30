@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { assertAuth } from "@/lib/auth";
 
@@ -10,14 +11,28 @@ const ALLOWED_COMMANDS = [
   "clear-negotiations",
   "sync-db",
   "refresh-token",
-];
+] as const;
+
+const ALLOWED_ARG_KEYS = ["resume_id", "area_id", "limit", "dry_run"] as const;
+
+const executeCommandSchema = z.object({
+  command: z.enum(ALLOWED_COMMANDS),
+  args: z
+    .record(z.string(), z.unknown())
+    .refine(
+      (obj) => Object.keys(obj).every((k) => (ALLOWED_ARG_KEYS as readonly string[]).includes(k)),
+      { message: "Unknown argument key" }
+    )
+    .default({}),
+});
 
 export async function executeCommand(
   command: string,
   args: Record<string, unknown> = {}
 ) {
-  if (!ALLOWED_COMMANDS.includes(command)) {
-    throw new Error(`Unknown command: ${command}`);
+  const parsed = executeCommandSchema.safeParse({ command, args });
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join(", "));
   }
 
   await assertAuth();

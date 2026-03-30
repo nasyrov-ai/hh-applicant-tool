@@ -54,15 +54,24 @@ export function SchedulesList({ schedules }: { schedules: Schedule[] }) {
 
   function handleToggle(id: string, enabled: boolean) {
     startToggle(async () => {
-      await toggleSchedule(id, enabled);
-      toast.success(enabled ? "Расписание включено" : "Расписание отключено");
+      try {
+        await toggleSchedule(id, enabled);
+        toast.success(enabled ? "Расписание включено" : "Расписание отключено");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось изменить расписание");
+      }
     });
   }
 
   function handleDelete(id: string) {
+    if (!confirm("Удалить это расписание?")) return;
     startDelete(async () => {
-      await deleteSchedule(id);
-      toast.success("Расписание удалено");
+      try {
+        await deleteSchedule(id);
+        toast.success("Расписание удалено");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось удалить расписание");
+      }
     });
   }
 

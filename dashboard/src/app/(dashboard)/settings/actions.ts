@@ -1,10 +1,20 @@
 "use server";
 
+import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 import { assertAuth } from "@/lib/auth";
 
+const settingsEntrySchema = z.object({
+  key: z.string().min(1).max(100),
+  value: z.unknown(),
+  description: z.string().max(500).optional(),
+});
+
+const saveSettingsSchema = z.array(settingsEntrySchema).min(1).max(100);
+
 export async function saveSettings(entries: { key: string; value: unknown; description?: string }[]) {
+  saveSettingsSchema.parse(entries);
   await assertAuth();
   const supabase = await createServerSupabase();
 

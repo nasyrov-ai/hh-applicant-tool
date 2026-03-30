@@ -2,6 +2,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { PageHeader } from "@/components/page-header";
 import { SettingsForm } from "./settings-form";
 
+export const metadata = { title: "Настройки — HH Dashboard" };
 export const revalidate = 30;
 
 export default async function SettingsPage() {

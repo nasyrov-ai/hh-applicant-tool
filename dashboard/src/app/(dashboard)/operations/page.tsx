@@ -114,7 +114,10 @@ export default function OperationsPage() {
     };
   }, []);
 
+  const DESTRUCTIVE_COMMANDS = new Set(["clear-negotiations"]);
+
   async function handleRun(op: OperationDef, formArgs: Record<string, unknown>) {
+    if (DESTRUCTIVE_COMMANDS.has(op.command) && !confirm(`Вы уверены, что хотите выполнить "${op.label}"?`)) return;
     setLoadingCommand(op.command);
     try {
       const mergedArgs = { ...(op.args || {}), ...formArgs };

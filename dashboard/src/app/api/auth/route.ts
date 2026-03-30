@@ -1,21 +1,35 @@
 import { NextResponse } from "next/server";
+import { makeAuthToken } from "@/lib/auth";
 
-async function makeAuthToken(secret: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode("hh_dashboard"));
-  return Array.from(new Uint8Array(signature))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+// Simple in-memory rate limiter: max 5 attempts per 15 minutes per IP
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const loginAttempts = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+  if (!entry || now >= entry.resetAt) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT_MAX;
 }
 
 export async function POST(request: Request) {
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown";
+
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many login attempts. Try again later." },
+      { status: 429 }
+    );
+  }
+
   const { password } = await request.json();
   const secret = process.env.DASHBOARD_SECRET;
 
@@ -44,5 +58,17 @@ export async function POST(request: Request) {
     path: "/",
   });
 
+  return response;
+}
+
+export async function DELETE() {
+  const response = NextResponse.json({ ok: true });
+  response.cookies.set("hh_dashboard_auth", "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge: 0,
+    path: "/",
+  });
   return response;
 }

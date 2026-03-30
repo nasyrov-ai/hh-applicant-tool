@@ -38,27 +38,32 @@ export function formatDateTime(date: string | null | undefined): string {
   });
 }
 
+// Single source of truth for negotiation state display config.
+// Each entry: prefix to match against state string -> {label, color, badgeVariant}.
+const STATE_CONFIG: {
+  prefix: string;
+  label: string;
+  color: string;
+  badgeVariant: "success" | "destructive" | "default" | "warning" | "muted";
+}[] = [
+  { prefix: "interview", label: "Приглашение", color: "text-success", badgeVariant: "success" },
+  { prefix: "invitation", label: "Приглашение", color: "text-success", badgeVariant: "success" },
+  { prefix: "discard", label: "Отказ", color: "text-destructive", badgeVariant: "destructive" },
+  { prefix: "active", label: "Активный", color: "text-accent", badgeVariant: "default" },
+  { prefix: "response", label: "Отклик", color: "text-accent", badgeVariant: "default" },
+  { prefix: "sent", label: "Отправлен", color: "text-muted-foreground", badgeVariant: "muted" },
+];
+
+function findStateConfig(state: string) {
+  return STATE_CONFIG.find((c) => state.startsWith(c.prefix));
+}
+
 export function stateLabel(state: string): string {
-  const map: Record<string, string> = {
-    active: "Активный",
-    response: "Отклик",
-    interview: "Приглашение",
-    invitation: "Приглашение",
-    discard: "Отказ",
-    sent: "Отправлен",
-  };
-  // state может содержать подвиды: invitation_interview и тд
-  for (const [key, label] of Object.entries(map)) {
-    if (state.startsWith(key)) return label;
-  }
-  return state;
+  return findStateConfig(state)?.label ?? state;
 }
 
 export function stateColor(state: string): string {
-  if (state === "interview" || state.startsWith("invitation")) return "text-success";
-  if (state === "discard") return "text-destructive";
-  if (state === "active" || state === "response") return "text-accent";
-  return "text-muted-foreground";
+  return findStateConfig(state)?.color ?? "text-muted-foreground";
 }
 
 export function experienceLabel(exp: string | null | undefined): string {
@@ -73,10 +78,7 @@ export function experienceLabel(exp: string | null | undefined): string {
 }
 
 export function stateBadgeVariant(state: string): "success" | "destructive" | "default" | "warning" | "muted" {
-  if (state === "interview" || state.startsWith("invitation")) return "success";
-  if (state === "discard") return "destructive";
-  if (state === "response" || state === "active") return "default";
-  return "muted";
+  return findStateConfig(state)?.badgeVariant ?? "muted";
 }
 
 export function commandStatusVariant(status: string): "success" | "destructive" | "warning" | "muted" | "default" {

@@ -192,14 +192,14 @@ class WorkerDaemon:
             command = result.data[0]
 
             # Claim it atomically
-            started_at = datetime.now(timezone.utc)
+            self._command_started_at = datetime.now(timezone.utc)
             claim_result = (
                 self.supabase.table("command_queue")
                 .update(
                     {
                         "status": "running",
                         "worker_id": self._worker_id,
-                        "started_at": started_at.isoformat(),
+                        "started_at": self._command_started_at.isoformat(),
                     }
                 )
                 .eq("id", command["id"])
@@ -291,10 +291,36 @@ class WorkerDaemon:
             argv = self.config_loader.build_argv(cmd_name, cmd_args)
             logger.info("argv: %s", argv)
 
-            # Execute via HHApplicantTool
+            # Execute via HHApplicantTool in a thread with timeout
             from .main import HHApplicantTool
 
-            result = HHApplicantTool(argv).run()
+            cmd_result_holder: list[Any] = []
+            cmd_error_holder: list[Exception] = []
+
+            def _run_tool() -> None:
+                try:
+                    r = HHApplicantTool(argv).run()
+                    cmd_result_holder.append(r)
+                except Exception as e:
+                    cmd_error_holder.append(e)
+
+            cmd_thread = threading.Thread(target=_run_tool, daemon=True)
+            cmd_thread.start()
+            cmd_thread.join(timeout=MAX_EXECUTION_TIME)
+
+            if cmd_thread.is_alive():
+                # Timed out — signal cancellation so the tool can stop gracefully
+                if self._cancellation_event:
+                    self._cancellation_event.set()
+                cmd_thread.join(timeout=10)
+                raise TimeoutError(
+                    f"Command exceeded MAX_EXECUTION_TIME ({MAX_EXECUTION_TIME}s)"
+                )
+
+            if cmd_error_holder:
+                raise cmd_error_holder[0]
+
+            result = cmd_result_holder[0] if cmd_result_holder else 0
             exit_code = result if isinstance(result, int) else 0
 
         except Exception as ex:
@@ -339,6 +365,7 @@ class WorkerDaemon:
 
             # Telegram notification
             from .utils.telegram import notify_command_completed, notify_command_failed
+            started_at = getattr(self, "_command_started_at", None)
             duration = int((completed_at - started_at).total_seconds()) if started_at else None
             if status == "completed":
                 notify_command_completed(cmd_name, duration)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useCallback } from "react";
+import { useState, useTransition, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { addToBlacklist, searchEmployers } from "./actions";
 import { Plus, Search, Loader2 } from "lucide-react";
@@ -17,6 +17,10 @@ export function BlacklistActions() {
   const [searching, startSearch] = useTransition();
   const [adding, startAdd] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  useEffect(() => {
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, []);
 
   const handleSearch = useCallback((q: string) => {
     setQuery(q);

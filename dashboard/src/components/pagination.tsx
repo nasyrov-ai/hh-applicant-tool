@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 interface PaginationProps {
@@ -60,7 +61,7 @@ export function Pagination({ currentPage, totalPages, baseHref, params }: Pagina
     >
       {currentPage > 1 ? (
         <Button variant="ghost" size="sm" asChild>
-          <a href={buildHref(baseHref, currentPage - 1, params)}>&lsaquo;</a>
+          <Link href={buildHref(baseHref, currentPage - 1, params)}>&lsaquo;</Link>
         </Button>
       ) : (
         <Button variant="ghost" size="sm" disabled>&lsaquo;</Button>
@@ -81,19 +82,19 @@ export function Pagination({ currentPage, totalPages, baseHref, params }: Pagina
             size="sm"
             asChild
           >
-            <a
+            <Link
               href={buildHref(baseHref, p, params)}
               aria-current={p === currentPage ? "page" : undefined}
             >
               {p}
-            </a>
+            </Link>
           </Button>
         )
       )}
 
       {currentPage < totalPages ? (
         <Button variant="ghost" size="sm" asChild>
-          <a href={buildHref(baseHref, currentPage + 1, params)}>&rsaquo;</a>
+          <Link href={buildHref(baseHref, currentPage + 1, params)}>&rsaquo;</Link>
         </Button>
       ) : (
         <Button variant="ghost" size="sm" disabled>&rsaquo;</Button>

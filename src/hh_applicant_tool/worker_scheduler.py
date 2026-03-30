@@ -61,28 +61,37 @@ class CronScheduler:
         )
 
         for schedule in result.data:
-            next_run = schedule.get("next_run_at")
+            try:
+                cron_expr = schedule["cron_expression"]
+                next_run = schedule.get("next_run_at")
 
-            # Если next_run_at не установлен — вычисляем
-            if not next_run:
-                cron = croniter(schedule["cron_expression"], now)
-                next_dt = cron.get_next(datetime)
-                self._update_next_run(schedule["id"], next_dt)
-                continue
+                # Если next_run_at не установлен — вычисляем
+                if not next_run:
+                    cron = croniter(cron_expr, now)
+                    next_dt = cron.get_next(datetime)
+                    self._update_next_run(schedule["id"], next_dt)
+                    continue
 
-            next_dt = datetime.fromisoformat(next_run)
-            if now >= next_dt:
-                # Пора запускать
-                self._enqueue_command(
-                    schedule["command"],
-                    schedule.get("args") or {},
-                    schedule["id"],
+                next_dt = datetime.fromisoformat(next_run)
+                if now >= next_dt:
+                    # Пора запускать
+                    self._enqueue_command(
+                        schedule["command"],
+                        schedule.get("args") or {},
+                        schedule["id"],
+                    )
+
+                    # Вычисляем следующий запуск
+                    cron = croniter(cron_expr, now)
+                    new_next = cron.get_next(datetime)
+                    self._update_schedule_after_run(schedule["id"], now, new_next)
+            except (ValueError, KeyError, TypeError) as ex:
+                logger.warning(
+                    "Skipping schedule %s — invalid cron expression %r: %s",
+                    schedule.get("id"),
+                    schedule.get("cron_expression"),
+                    ex,
                 )
-
-                # Вычисляем следующий запуск
-                cron = croniter(schedule["cron_expression"], now)
-                new_next = cron.get_next(datetime)
-                self._update_schedule_after_run(schedule["id"], now, new_next)
 
     def _enqueue_command(
         self, command: str, args: dict, schedule_id: str

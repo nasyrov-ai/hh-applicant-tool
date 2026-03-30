@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { toast } from "sonner";
 import { removeFromBlacklist } from "./actions";
 import { formatDateTime } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +14,11 @@ export function BlacklistRow({ item }: { item: BlacklistEntry }) {
 
   function handleRemove() {
     startTransition(async () => {
-      await removeFromBlacklist(item.employer_id);
+      try {
+        await removeFromBlacklist(item.employer_id);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось разблокировать");
+      }
     });
   }
 

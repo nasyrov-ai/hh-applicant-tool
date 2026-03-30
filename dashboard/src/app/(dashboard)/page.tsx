@@ -24,6 +24,7 @@ const OverviewChart = dynamic(
   }
 );
 
+export const metadata = { title: "Overview — HH Dashboard" };
 export const revalidate = 60;
 
 async function getStats(supabase: Awaited<ReturnType<typeof createServerSupabase>>) {

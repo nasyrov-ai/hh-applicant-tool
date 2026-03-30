@@ -1,14 +1,18 @@
 "use server";
 
+import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 import { assertAuth } from "@/lib/auth";
+
+const employerIdSchema = z.number().int().positive();
 
 export async function addToBlacklist(
   employerId: number,
   employerName: string,
   reason: string
 ) {
+  employerIdSchema.parse(employerId);
   await assertAuth();
   const supabase = await createServerSupabase();
 
@@ -23,6 +27,7 @@ export async function addToBlacklist(
 }
 
 export async function removeFromBlacklist(employerId: number) {
+  employerIdSchema.parse(employerId);
   await assertAuth();
   const supabase = await createServerSupabase();
 

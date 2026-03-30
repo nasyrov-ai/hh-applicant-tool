@@ -2,6 +2,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { PageHeader } from "@/components/page-header";
 import { SchedulesList } from "./schedules-list";
 
+export const metadata = { title: "Расписание — HH Dashboard" };
 export const revalidate = 30;
 
 export default async function SchedulesPage() {
