@@ -7,7 +7,7 @@ import { formatDateTime, formatNumber } from "@/lib/utils";
 import type { Resume } from "@/lib/types";
 import { Eye, ExternalLink, FileText, RefreshCw } from "lucide-react";
 
-export const metadata = { title: "Резюме — HH Dashboard" };
+export const metadata = { title: "Резюме — 1.618 worksearch" };
 export const revalidate = 60;
 
 export default async function ResumesPage() {

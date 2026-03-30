@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Command } from "lucide-react";
+import Image from "next/image";
+import { Menu } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { createBrowserSupabase } from "@/lib/supabase-client";
@@ -32,14 +33,17 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={href}
             onClick={onNavigate}
             className={cn(
-              "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+              "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300",
               active
-                ? "bg-primary/10 text-primary shadow-sm shadow-primary/5"
-                : "text-sidebar-foreground hover:bg-muted/60 hover:text-foreground"
+                ? "bg-primary/8 text-primary"
+                : "text-sidebar-foreground hover:bg-white/[0.03] hover:text-foreground"
             )}
           >
+            {active && (
+              <span className="absolute left-0 top-1/4 h-1/2 w-0.5 rounded-full bg-primary shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
+            )}
             <Icon className={cn(
-              "h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110",
+              "h-4 w-4 shrink-0 transition-all duration-300 group-hover:scale-110",
               active && "text-primary"
             )} />
             {label}
@@ -125,11 +129,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-14 items-center gap-2.5 px-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <Command className="h-3.5 w-3.5" />
-        </div>
-        <span className="font-semibold tracking-tight">
-          HH Dashboard
+        <Image src="/logo.svg" alt="1.618" width={24} height={24} className="invert opacity-80" />
+        <span className="font-semibold tracking-tight text-sm">
+          <span className="text-gradient-gold">1.618</span>
+          <span className="text-muted-foreground ml-1.5 font-normal">worksearch</span>
         </span>
       </div>
       <Separator className="bg-sidebar-border" />
@@ -152,7 +155,7 @@ export function MobileHeader() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b border-border bg-card/80 px-4 backdrop-blur-xl md:hidden">
+    <header className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b border-white/[0.04] bg-card/80 px-4 backdrop-blur-xl md:hidden">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -168,11 +171,10 @@ export function MobileHeader() {
         </SheetContent>
       </Sheet>
       <div className="flex items-center gap-2.5">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <Command className="h-3.5 w-3.5" />
-        </div>
-        <span className="font-semibold tracking-tight">
-          HH Dashboard
+        <Image src="/logo.svg" alt="1.618" width={24} height={24} className="invert opacity-80" />
+        <span className="font-semibold tracking-tight text-sm">
+          <span className="text-gradient-gold">1.618</span>
+          <span className="text-muted-foreground ml-1.5 font-normal">worksearch</span>
         </span>
       </div>
     </header>
@@ -181,7 +183,7 @@ export function MobileHeader() {
 
 export function Sidebar() {
   return (
-    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-56 border-r border-sidebar-border bg-sidebar md:flex">
+    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-56 border-r border-white/[0.04] bg-sidebar md:flex">
       <SidebarContent />
     </aside>
   );

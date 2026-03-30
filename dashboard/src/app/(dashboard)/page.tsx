@@ -24,7 +24,7 @@ const OverviewChart = dynamic(
   }
 );
 
-export const metadata = { title: "Обзор — HH Dashboard" };
+export const metadata = { title: "Обзор — 1.618 worksearch" };
 export const revalidate = 60;
 
 async function getStats(supabase: Awaited<ReturnType<typeof createServerSupabase>>) {

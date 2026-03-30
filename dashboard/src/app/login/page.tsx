@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Command, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -33,16 +34,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.65_0.2_264_/_0.08),transparent_70%)]" />
-      <div className="animate-scale-in relative w-full max-w-sm">
-        <div className="rounded-2xl border border-border bg-card/80 p-8 shadow-xl shadow-black/5 backdrop-blur-xl">
+    <div className="flex min-h-screen items-center justify-center bg-background bg-grid overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.08),transparent_70%)]" />
+      <div className="glow-gold glow-pulse" style={{ top: "-20%", left: "50%", transform: "translateX(-50%)" }} />
+      <div className="animate-scale-in relative w-full max-w-sm z-10">
+        <div className="card-gradient-border rounded-2xl border border-border bg-card/80 p-8 shadow-xl shadow-black/20 backdrop-blur-xl">
           <div className="mb-8 flex flex-col items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
-              <Command className="h-6 w-6" />
-            </div>
+            <Image src="/logo.svg" alt="1.618" width={40} height={40} className="invert opacity-80" />
             <div className="text-center">
-              <h1 className="text-xl font-bold tracking-tight">HH Dashboard</h1>
+              <h1 className="text-xl font-bold tracking-tight">
+                <span className="text-gradient-gold">1.618</span>
+                <span className="text-muted-foreground ml-2 font-normal text-base">worksearch</span>
+              </h1>
               <p className="mt-1 text-sm text-muted-foreground">Введите пароль для входа</p>
             </div>
           </div>
@@ -61,7 +64,7 @@ export default function LoginPage() {
               <p className="animate-fade-in text-sm text-destructive">Неверный пароль</p>
             )}
 
-            <Button type="submit" className="h-11 w-full" disabled={loading}>
+            <Button type="submit" className="h-11 w-full bg-primary text-primary-foreground hover:bg-[#F5D061] hover:shadow-[0_8px_40px_rgba(212,175,55,0.3)] transition-all duration-300" disabled={loading}>
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Войти
             </Button>

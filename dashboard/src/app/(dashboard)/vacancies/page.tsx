@@ -17,7 +17,7 @@ import { Pagination } from "@/components/pagination";
 import { VacanciesFilter } from "./filter";
 import { Briefcase, ExternalLink, MapPin, Wifi } from "lucide-react";
 
-export const metadata = { title: "Вакансии — HH Dashboard" };
+export const metadata = { title: "Вакансии — 1.618 worksearch" };
 export const revalidate = 60;
 
 interface SearchParams {

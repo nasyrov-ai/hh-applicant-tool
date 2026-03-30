@@ -8,7 +8,7 @@ import type { Command } from "@/lib/types";
 import Link from "next/link";
 import { ChevronRight, ScrollText } from "lucide-react";
 
-export const metadata = { title: "Логи — HH Dashboard" };
+export const metadata = { title: "Логи — 1.618 worksearch" };
 export const revalidate = 60;
 
 export default async function LogsPage() {

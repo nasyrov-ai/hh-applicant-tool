@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Building2, ExternalLink, Globe, Mail, MapPin } from "lucide-react";
 import type { Employer, EmployerSite } from "@/lib/types";
 
-export const metadata = { title: "Работодатели — HH Dashboard" };
+export const metadata = { title: "Работодатели — 1.618 worksearch" };
 export const revalidate = 60;
 
 interface SearchParams {

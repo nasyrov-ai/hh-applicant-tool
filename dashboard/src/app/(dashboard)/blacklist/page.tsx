@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Ban } from "lucide-react";
 import type { BlacklistEntry } from "@/lib/types";
 
-export const metadata = { title: "Блэклист — HH Dashboard" };
+export const metadata = { title: "Блэклист — 1.618 worksearch" };
 export const revalidate = 30;
 
 export default async function BlacklistPage() {

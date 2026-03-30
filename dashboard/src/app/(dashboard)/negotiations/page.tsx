@@ -17,7 +17,7 @@ import { MessagesSquare } from "lucide-react";
 import { Pagination } from "@/components/pagination";
 import { NegotiationsFilter } from "./filter";
 
-export const metadata = { title: "Отклики — HH Dashboard" };
+export const metadata = { title: "Отклики — 1.618 worksearch" };
 export const revalidate = 60;
 
 interface SearchParams {

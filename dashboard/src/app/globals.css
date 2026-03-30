@@ -64,7 +64,10 @@
   }
 }
 
-:root {
+/* ================================
+   LIGHT THEME
+   ================================ */
+.light {
   --radius: 0.75rem;
 
   --background: oklch(0.975 0.003 260);
@@ -102,41 +105,97 @@
   --chart-5: oklch(0.667 0.195 322);
 }
 
-.dark {
-  --background: oklch(0.09 0.012 270);
-  --foreground: oklch(0.93 0.005 260);
-  --muted: oklch(0.16 0.012 270);
-  --muted-foreground: oklch(0.55 0.015 260);
-  --popover: oklch(0.12 0.012 270);
-  --popover-foreground: oklch(0.93 0.005 260);
-  --card: oklch(0.12 0.014 270);
-  --card-foreground: oklch(0.93 0.005 260);
-  --border: oklch(0.2 0.014 270);
-  --input: oklch(0.2 0.014 270);
-  --primary: oklch(0.65 0.2 264);
-  --primary-foreground: oklch(0.1 0.015 264);
-  --secondary: oklch(0.18 0.012 270);
-  --secondary-foreground: oklch(0.93 0.005 260);
-  --accent: oklch(0.65 0.2 264);
-  --accent-foreground: oklch(0.93 0.03 264);
-  --destructive: oklch(0.6 0.22 25);
-  --destructive-foreground: oklch(0.93 0.005 27);
-  --success: oklch(0.62 0.19 145);
-  --success-foreground: oklch(0.93 0.005 142);
-  --warning: oklch(0.75 0.17 73);
-  --warning-foreground: oklch(0.2 0.015 73);
-  --ring: oklch(0.65 0.2 264);
-  --sidebar: oklch(0.1 0.014 270);
-  --sidebar-foreground: oklch(0.55 0.015 260);
-  --sidebar-border: oklch(0.18 0.012 270);
-  --sidebar-accent: oklch(0.65 0.2 264 / 0.12);
-  --sidebar-accent-foreground: oklch(0.65 0.2 264);
-  --chart-1: oklch(0.65 0.2 264);
-  --chart-2: oklch(0.62 0.19 145);
-  --chart-3: oklch(0.75 0.17 73);
-  --chart-4: oklch(0.6 0.22 25);
-  --chart-5: oklch(0.67 0.195 322);
+/* ================================
+   DARK THEME (Gold Premium) — also the :root default
+   ================================ */
+:root {
+  --radius: 0.75rem;
+
+  /* Gold palette tokens */
+  --gold: #D4AF37;
+  --gold-bright: #F5D061;
+  --gold-deep: #B8960C;
+  --gold-light: #FFF1C1;
+  --gold-glow: rgba(212, 175, 55, 0.12);
+  --gold-border: rgba(212, 175, 55, 0.18);
+  --emerald: #10B981;
+  --emerald-glow: rgba(16, 185, 129, 0.12);
+
+  /* shadcn variable mapping — dark gold */
+  --background: #0A0A0B;
+  --foreground: #FFFFFF;
+  --muted: #1A1A1D;
+  --muted-foreground: #71717A;
+  --popover: #111113;
+  --popover-foreground: #FFFFFF;
+  --card: #111113;
+  --card-foreground: #FFFFFF;
+  --border: rgba(255, 255, 255, 0.06);
+  --input: rgba(255, 255, 255, 0.06);
+  --primary: #D4AF37;
+  --primary-foreground: #0A0A0B;
+  --secondary: #1A1A1D;
+  --secondary-foreground: #A1A1AA;
+  --accent: #D4AF37;
+  --accent-foreground: #0A0A0B;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --success: #10B981;
+  --success-foreground: #FFFFFF;
+  --warning: #F5D061;
+  --warning-foreground: #0A0A0B;
+  --ring: #D4AF37;
+  --sidebar: #0A0A0B;
+  --sidebar-foreground: #A1A1AA;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-accent: rgba(212, 175, 55, 0.12);
+  --sidebar-accent-foreground: #D4AF37;
+  --chart-1: #D4AF37;
+  --chart-2: #10B981;
+  --chart-3: #F5D061;
+  --chart-4: #EF4444;
+  --chart-5: #A855F7;
 }
+
+.dark {
+  --background: #0A0A0B;
+  --foreground: #FFFFFF;
+  --muted: #1A1A1D;
+  --muted-foreground: #71717A;
+  --popover: #111113;
+  --popover-foreground: #FFFFFF;
+  --card: #111113;
+  --card-foreground: #FFFFFF;
+  --border: rgba(255, 255, 255, 0.06);
+  --input: rgba(255, 255, 255, 0.06);
+  --primary: #D4AF37;
+  --primary-foreground: #0A0A0B;
+  --secondary: #1A1A1D;
+  --secondary-foreground: #A1A1AA;
+  --accent: #D4AF37;
+  --accent-foreground: #0A0A0B;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --success: #10B981;
+  --success-foreground: #FFFFFF;
+  --warning: #F5D061;
+  --warning-foreground: #0A0A0B;
+  --ring: #D4AF37;
+  --sidebar: #0A0A0B;
+  --sidebar-foreground: #A1A1AA;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-accent: rgba(212, 175, 55, 0.12);
+  --sidebar-accent-foreground: #D4AF37;
+  --chart-1: #D4AF37;
+  --chart-2: #10B981;
+  --chart-3: #F5D061;
+  --chart-4: #EF4444;
+  --chart-5: #A855F7;
+}
+
+/* ================================
+   BASE STYLES
+   ================================ */
 
 html {
   scroll-behavior: smooth;
@@ -145,19 +204,47 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle animated background gradient */
-.dark body {
+/* Dark mode ambient gradient */
+.dark body,
+:root:not(.light) body {
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.2 0.06 264 / 0.15), transparent),
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212, 175, 55, 0.06), transparent),
     var(--background);
 }
 
-/* Stagger children animation */
+/* Gold selection color */
+::selection {
+  background: rgba(212, 175, 55, 0.35);
+  color: #FFFFFF;
+}
+
+/* ================================
+   SCROLLBAR — thin & subtle
+   ================================ */
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #3F3F46;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #71717A;
+}
+
+/* ================================
+   STAGGER ANIMATION
+   ================================ */
+
 .animate-stagger > * {
   animation: slide-up 0.4s ease-out both;
 }
@@ -170,23 +257,315 @@ body {
 .animate-stagger > *:nth-child(7) { animation-delay: 360ms; }
 .animate-stagger > *:nth-child(8) { animation-delay: 420ms; }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--muted);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+/* ================================
+   BACKGROUND GRID (perspective rays)
+   ================================ */
+
+.bg-grid {
+  position: relative;
 }
 
-/* Selection */
-::selection {
-  background: oklch(0.65 0.2 264 / 0.25);
+.bg-grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-grid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(160deg, transparent 42%, rgba(255, 255, 255, 0.02) 42.5%, rgba(255, 255, 255, 0.02) 43%, transparent 43.5%),
+    linear-gradient(200deg, transparent 42%, rgba(255, 255, 255, 0.02) 42.5%, rgba(255, 255, 255, 0.02) 43%, transparent 43.5%),
+    linear-gradient(150deg, transparent 30%, rgba(255, 255, 255, 0.015) 30.3%, rgba(255, 255, 255, 0.015) 30.6%, transparent 31%),
+    linear-gradient(210deg, transparent 30%, rgba(255, 255, 255, 0.015) 30.3%, rgba(255, 255, 255, 0.015) 30.6%, transparent 31%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ================================
+   GOLD GLOW BLOBS — ambient decorative
+   ================================ */
+
+.glow-gold {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+.glow-emerald {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.1); }
+}
+
+.glow-pulse {
+  animation: glowPulse 6s ease-in-out infinite;
+}
+
+/* ================================
+   SECTION DIVIDER — gold center glow
+   ================================ */
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.04) 15%, rgba(212, 175, 55, 0.3) 50%, rgba(255, 255, 255, 0.04) 85%, transparent 100%);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ================================
+   CURSOR GLOW — follows mouse
+   ================================ */
+
+.cursor-glow {
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s;
+  mix-blend-mode: screen;
+}
+
+/* ================================
+   CARD HOVER EFFECTS — gold glow
+   ================================ */
+
+.card-hover-gold {
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+.card-hover-gold:hover {
+  border-color: rgba(212, 175, 55, 0.18) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 40px rgba(212, 175, 55, 0.08), 0 0 0 1px rgba(212, 175, 55, 0.12);
+}
+
+/* Gradient border card — premium look */
+.card-gradient-border {
+  position: relative;
+}
+
+.card-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from 180deg at 50% 50%, rgba(212, 175, 55, 0.3) 0deg, rgba(245, 208, 97, 0.1) 90deg, rgba(212, 175, 55, 0.3) 180deg, rgba(16, 185, 129, 0.1) 270deg, rgba(212, 175, 55, 0.3) 360deg);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+.card-gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* ================================
+   GRADIENT TEXT — gold
+   ================================ */
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #B8960C 0%, #D4AF37 40%, #F5D061 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ================================
+   REDUCED MOTION
+   ================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ================================
+   PREMIUM GLOBAL OVERRIDES
+   Smooth transitions & ultra-subtle borders
+   ================================ */
+
+/* Smooth easing for all interactive elements */
+*, *::before, *::after {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Cards: subtle hover lift & gold glow --- */
+[data-slot="card"] {
+  border-color: rgba(255, 255, 255, 0.04);
+  transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-slot="card"]:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* --- Tables: barely-visible row separators --- */
+[data-slot="table-row"] {
+  border-color: rgba(255, 255, 255, 0.04);
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-slot="table-row"]:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+[data-slot="table-header"] tr {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-slot="table-footer"] {
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+/* --- Buttons: premium feel --- */
+[data-slot="button"][data-variant="default"] {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-slot="button"][data-variant="default"]:hover {
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2);
+  transform: translateY(-0.5px);
+}
+
+[data-slot="button"][data-variant="outline"],
+[data-slot="button"][data-variant="ghost"] {
+  border-color: rgba(255, 255, 255, 0.06);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-slot="button"][data-variant="outline"]:hover,
+[data-slot="button"][data-variant="ghost"]:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* --- Inputs & Selects: subtle borders, gold focus glow --- */
+[data-slot="input"],
+[data-slot="select-trigger"] {
+  border-color: rgba(255, 255, 255, 0.06);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-slot="input"]:hover,
+[data-slot="select-trigger"]:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-slot="input"]:focus-visible,
+[data-slot="select-trigger"]:focus-visible,
+[data-slot="select-trigger"][data-state="open"] {
+  border-color: rgba(212, 175, 55, 0.4);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+/* --- Badges: softer, more subtle --- */
+[data-slot="badge"] {
+  border-color: transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-slot="badge"][data-variant="outline"] {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-slot="badge"][data-variant="secondary"] {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* --- Separators: barely visible --- */
+[data-slot="separator"] {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* --- Select dropdowns: premium popover --- */
+[data-slot="select-content"] {
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* --- Popover borders --- */
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="command"],
+[data-slot="dialog-content"] {
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* --- Links & interactive: smooth color transitions --- */
+a, button, [role="button"] {
+  transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Sidebar nav active: gold left accent bar --- */
+.dark [data-slot="sidebar-nav-active"],
+:root:not(.light) [data-slot="sidebar-nav-active"] {
+  position: relative;
+}
+
+.dark [data-slot="sidebar-nav-active"]::before,
+:root:not(.light) [data-slot="sidebar-nav-active"]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  height: 50%;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--primary);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+}
+
+/* --- Light mode: don't apply dark overrides --- */
+.light [data-slot="card"],
+.light [data-slot="table-row"],
+.light [data-slot="button"],
+.light [data-slot="input"],
+.light [data-slot="select-trigger"],
+.light [data-slot="separator"] {
+  border-color: revert-layer;
 }

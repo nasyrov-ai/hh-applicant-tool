@@ -188,12 +188,17 @@ export const NegotiationsChart = memo(function NegotiationsChart({
             <linearGradient id={GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
               <stop
                 offset="0%"
-                stopColor="var(--primary)"
-                stopOpacity={0.2}
+                stopColor="#D4AF37"
+                stopOpacity={0.25}
+              />
+              <stop
+                offset="50%"
+                stopColor="#D4AF37"
+                stopOpacity={0.08}
               />
               <stop
                 offset="100%"
-                stopColor="var(--primary)"
+                stopColor="#D4AF37"
                 stopOpacity={0}
               />
             </linearGradient>
@@ -246,7 +251,7 @@ export const NegotiationsChart = memo(function NegotiationsChart({
           <path
             d={linePath}
             fill="none"
-            stroke="var(--primary)"
+            stroke="#D4AF37"
             strokeWidth={2.5}
             strokeLinejoin="round"
             strokeLinecap="round"
