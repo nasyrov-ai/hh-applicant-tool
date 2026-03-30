@@ -75,8 +75,8 @@ function WorkerIndicator() {
     const channel = supabase
       .channel("worker-status")
       .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "worker_status" },
+        "postgres_changes" as "system",
+        { event: "*", schema: "public", table: "worker_status" } as Record<string, string>,
         (payload: { new: { status: string; last_seen_at: string } }) => {
           const row = payload.new;
           if (row?.status) setStatus(row.status as "online" | "offline");

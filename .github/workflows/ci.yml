@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dashboard:
+    name: Dashboard (lint + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Create dummy env for build
+        run: |
+          echo 'NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co' > .env.local
+          echo 'NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder-key' >> .env.local
+      - run: npx next build
+
+  python:
+    name: Python (syntax check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: pip install -e ".[worker]"
+      - run: python -m py_compile src/hh_applicant_tool/worker.py
+      - run: python -m py_compile src/hh_applicant_tool/worker_scheduler.py

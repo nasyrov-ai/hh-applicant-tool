@@ -10,3 +10,6 @@ docs
 *.egg-info
 dist
 build
+dashboard
+docker-compose.yml
+*.png

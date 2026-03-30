@@ -40,7 +40,7 @@ interface Schedule {
   id: string;
   name: string;
   command: string;
-  args: Record<string, unknown>;
+  args: Record<string, unknown> | null;
   cron_expression: string;
   enabled: boolean;
   last_run_at: string | null;

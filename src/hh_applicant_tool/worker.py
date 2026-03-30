@@ -406,6 +406,36 @@ class WorkerDaemon:
         except Exception as ex:
             logger.warning("Auto-sync failed: %s", ex)
 
+        # Trigger dashboard ISR revalidation
+        self._revalidate_dashboard()
+
+    def _revalidate_dashboard(self) -> None:
+        """Call the dashboard revalidation endpoint to refresh cached pages."""
+        import urllib.request
+        import json as _json
+
+        dashboard_url = os.environ.get("DASHBOARD_URL", "http://localhost:3000")
+        secret = os.environ.get("DASHBOARD_SECRET")
+        if not secret:
+            return
+
+        url = f"{dashboard_url.rstrip('/')}/api/revalidate"
+        try:
+            data = _json.dumps({"secret": secret}).encode()
+            req = urllib.request.Request(
+                url,
+                data=data,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                if resp.status == 200:
+                    logger.info("Dashboard revalidation triggered")
+                else:
+                    logger.warning("Dashboard revalidation returned %d", resp.status)
+        except Exception as ex:
+            logger.warning("Dashboard revalidation failed: %s", ex)
+
     def _fail_command(self, cmd_id: str, error: str) -> None:
         """Mark command as failed with error message."""
         logger.error("Command %s failed: %s", cmd_id, error)

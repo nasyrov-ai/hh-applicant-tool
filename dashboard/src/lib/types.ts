@@ -90,5 +90,5 @@ export interface BlacklistEntry {
 export interface EmployerSearchResult {
   id: number;
   name: string;
-  alternate_url?: string;
+  alternate_url: string | null;
 }

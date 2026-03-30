@@ -1,4 +1,18 @@
 services:
+  # === Dashboard (Next.js) ===
+  dashboard:
+    container_name: hh_dashboard
+    build:
+      context: dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - dashboard/.env.local
+    restart: unless-stopped
+    profiles:
+      - dashboard
+
   # === Cron mode (legacy) ===
   hh_applicant_tool:
     container_name: hh_applicant_tool
@@ -26,6 +40,8 @@ services:
       - ${CONFIG_DIR:-./config}:/app/config
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
+    env_file:
+      - .env.worker
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}

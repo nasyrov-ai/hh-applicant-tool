@@ -72,13 +72,13 @@ export function CommandStatus({ commandId, onComplete }: CommandStatusProps) {
     channel = supabase
       .channel(`command-${commandId}`)
       .on(
-        "postgres_changes",
+        "postgres_changes" as "system",
         {
           event: "UPDATE",
           schema: "public",
           table: "command_queue",
           filter: `id=eq.${commandId}`,
-        },
+        } as Record<string, string>,
         (payload: { new: { status: string; error_message: string | null } }) => {
           handleStatus(
             payload.new.status as Status,
