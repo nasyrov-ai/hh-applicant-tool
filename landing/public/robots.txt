@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://worksearch.1618.digital/sitemap.xml

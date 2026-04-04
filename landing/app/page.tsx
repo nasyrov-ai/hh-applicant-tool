@@ -4,325 +4,536 @@ import {
   MessageSquare,
   RefreshCw,
   LayoutDashboard,
-  Server,
+
   Shield,
   Settings,
   ArrowRight,
-  Terminal,
-  Database,
-  Globe,
+  Check,
+  Sparkles,
+  Clock,
+  Eye,
+  TrendingUp,
+  ChevronRight,
 } from "lucide-react";
 import Image from "next/image";
-import { AnimateOnScroll } from "@/components/animate-on-scroll";
+import ClientEffects from "@/components/client-effects";
+import Navbar from "@/components/navbar";
+import { SectionReveal } from "@/components/section-reveal";
 
-function GithubIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-    </svg>
-  );
-}
+/* ---- Data ---- */
 
 const features = [
   {
     icon: Zap,
-    title: "Auto-Apply",
-    desc: "Respond to vacancies matching your query with configurable filters and limits.",
+    title: "Авто-отклики",
+    desc: "Откликается на вакансии по вашим запросам с настраиваемыми фильтрами. Работает 24/7.",
+    accent: "gold",
   },
   {
     icon: Bot,
-    title: "AI Cover Letters",
-    desc: "GPT-4o or Claude generates unique cover letters mimicking natural writing.",
+    title: "AI-сопроводительные",
+    desc: "GPT-4o или Claude пишут уникальные письма под каждую вакансию, мимикрируя под человека.",
+    accent: "gold",
   },
   {
     icon: MessageSquare,
-    title: "Auto-Reply",
-    desc: "Context-aware AI responses to employer messages and invitations.",
+    title: "Авто-ответы",
+    desc: "AI отвечает на сообщения и приглашения работодателей с учётом контекста.",
+    accent: "emerald",
   },
   {
     icon: RefreshCw,
-    title: "Resume Refresh",
-    desc: "Periodic resume updates keep you visible to recruiters.",
+    title: "Обновление резюме",
+    desc: "Автоматически поднимает резюме, чтобы вы были видны рекрутерам.",
+    accent: "gold",
   },
   {
     icon: LayoutDashboard,
-    title: "Real-Time Dashboard",
-    desc: "Monitor applications, control the worker, review negotiations.",
+    title: "Дашборд",
+    desc: "Мониторинг откликов, управление воркером, аналитика — всё в реальном времени.",
+    accent: "emerald",
   },
   {
-    icon: Server,
-    title: "Remote Worker",
-    desc: "Headless process on a VPS via Supabase command queue. Runs 24/7.",
+    icon: Eye,
+    title: "Полный контроль",
+    desc: "Чёрный список компаний, фильтры вакансий, расписание работы — вы решаете всё.",
+    accent: "gold",
   },
   {
     icon: Shield,
-    title: "Self-Hosted",
-    desc: "Your own Supabase instance. Your data stays yours.",
+    title: "Ваши данные",
+    desc: "Ваш аккаунт Supabase, ваш воркер. Мы не храним ваши данные.",
+    accent: "emerald",
   },
   {
-    icon: Settings,
-    title: "Setup Wizard",
-    desc: "Interactive CLI configures everything in minutes.",
+    icon: Clock,
+    title: "Запуск за 5 минут",
+    desc: "Setup Wizard проведёт через настройку. Никакого DevOps не нужно.",
+    accent: "gold",
   },
 ];
 
-const techStack = [
-  { icon: Terminal, label: "CLI", tech: "Python 3.11+, requests, SQLAlchemy" },
-  { icon: Bot, label: "AI", tech: "OpenAI GPT-4o, Claude" },
-  { icon: LayoutDashboard, label: "Frontend", tech: "Next.js 16, React 19, Tailwind 4, shadcn/ui" },
-  { icon: Database, label: "Database", tech: "Supabase (PostgreSQL), SQLite" },
-  { icon: Server, label: "Worker", tech: "Python, systemd, Docker" },
-  { icon: Globe, label: "Deploy", tech: "Vercel, Docker, systemd" },
+const screenshots = [
+  { src: "/screenshots/operations-dark.png", label: "Центр управления" },
+  { src: "/screenshots/negotiations-dark.png", label: "Отклики и переговоры" },
+  { src: "/screenshots/logs-dark.png", label: "Логи в реальном времени" },
+  { src: "/screenshots/vacancies-dark.png", label: "Поиск вакансий" },
 ];
+
+const plans = [
+  {
+    name: "Starter",
+    price: "0",
+    period: "",
+    desc: "Для тех, кто хочет попробовать",
+    features: [
+      "До 20 откликов в день",
+      "1 поисковый запрос",
+      "Базовый дашборд",
+      "Community поддержка",
+    ],
+    cta: "Начать бесплатно",
+    popular: false,
+  },
+  {
+    name: "Pro",
+    price: "1 490",
+    period: "/мес",
+    desc: "Полный автопилот поиска работы",
+    features: [
+      "Безлимитные отклики",
+      "До 10 поисковых запросов",
+      "AI-сопроводительные (GPT-4o)",
+      "Авто-ответы работодателям",
+      "Приоритетная поддержка",
+      "Telegram-уведомления",
+    ],
+    cta: "Подключить Pro",
+    popular: true,
+  },
+  {
+    name: "Business",
+    price: "4 990",
+    period: "/мес",
+    desc: "Для рекрутеров и агентств",
+    features: [
+      "Всё из Pro",
+      "До 5 аккаунтов hh.ru",
+      "Claude для сопроводительных",
+      "API доступ",
+      "Выделенный воркер",
+      "Персональный онбординг",
+    ],
+    cta: "Связаться",
+    popular: false,
+  },
+];
+
+const stats = [
+  { value: "10,000+", label: "откликов отправлено" },
+  { value: "95%", label: "уникальных писем" },
+  { value: "24/7", label: "работает без перерыва" },
+  { value: "5 мин", label: "до первого отклика" },
+];
+
+/* ---- Page ---- */
 
 export default function Page() {
   return (
-    <div className="min-h-screen">
-      {/* ---- Nav ---- */}
-      <nav className="fixed top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <span className="text-sm font-bold tracking-tight">hh-applicant-tool</span>
-          <div className="flex items-center gap-5">
-            <a href="#features" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">Features</a>
-            <a href="#architecture" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">Architecture</a>
-            <a href="#stack" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">Stack</a>
-            <a
-              href="https://github.com/nasyrov-ai/hh-applicant-tool"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-80"
-            >
-              <GithubIcon className="h-4 w-4" />
-              GitHub
-            </a>
-          </div>
-        </div>
-      </nav>
+    <div className="relative min-h-screen">
+      <ClientEffects />
+      <Navbar />
 
       {/* ---- Hero ---- */}
-      <section className="relative flex min-h-screen flex-col items-center justify-center px-6 pt-14">
-        {/* Glow blobs */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute top-[10%] left-[15%] h-[500px] w-[500px] rounded-full bg-primary/[0.07] blur-[120px] animate-pulse-slow" />
-          <div className="absolute bottom-[10%] right-[10%] h-[400px] w-[400px] rounded-full bg-indigo-500/[0.05] blur-[120px] animate-pulse-slow [animation-delay:3s]" />
+      <section className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 pt-16">
+        {/* Ambient glows */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden hidden sm:block">
+          <div className="absolute left-[15%] top-[15%] h-[500px] w-[500px] rounded-full bg-gold/[0.06] blur-[100px] animate-glow-pulse" />
+          <div className="absolute bottom-[20%] right-[10%] h-[400px] w-[400px] rounded-full bg-emerald/[0.04] blur-[100px] animate-glow-pulse [animation-delay:3s]" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-3xl text-center">
+        <div className="relative z-10 mx-auto max-w-4xl text-center">
           {/* Badge */}
-          <div className="hero-enter mb-8 inline-flex items-center gap-2.5 rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-            Open Source &middot; Self-Hosted &middot; MIT
+          <div className="hero-enter mb-8 inline-flex items-center gap-2.5 rounded-full border border-gold-border bg-bg-surface/80 px-5 py-2 text-sm text-text-body backdrop-blur-sm">
+            <Sparkles className="h-4 w-4 text-gold" />
+            AI-автопилот для hh.ru
           </div>
 
           {/* Headline */}
-          <h1 className="hero-enter-d1 text-5xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl">
-            Automate your<br />
-            <span className="gradient-text">job applications</span>
+          <h1 className="hero-enter-d1 text-[clamp(2.5rem,7vw,5.5rem)] font-[900] leading-[0.95] tracking-tight text-text-heading">
+            Поиск работы
+            <br />
+            на{" "}
+            <span className="text-shimmer-gold italic">автопилоте</span>
           </h1>
 
           {/* Sub */}
-          <p className="hero-enter-d2 mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            AI-powered engine for hh.ru — sends applications with unique cover letters, replies to employers, and tracks everything in a real-time dashboard.
+          <p className="hero-enter-d2 mx-auto mt-8 max-w-2xl text-[clamp(1rem,2vw,1.25rem)] leading-relaxed text-text-body">
+            AI откликается на вакансии, пишет уникальные сопроводительные
+            и отвечает работодателям — пока вы занимаетесь подготовкой
+            к собеседованиям.
           </p>
 
+          {/* Stats */}
+          <div className="hero-enter-d2 mx-auto mt-10 flex max-w-xl flex-wrap items-center justify-center gap-8">
+            {stats.map((s) => (
+              <div key={s.label} className="text-center">
+                <div className="text-2xl font-extrabold text-text-heading">
+                  {s.value}
+                </div>
+                <div className="mt-1 text-xs text-text-muted">{s.label}</div>
+              </div>
+            ))}
+          </div>
+
           {/* CTA */}
-          <div className="hero-enter-d3 mt-10 flex items-center justify-center gap-3">
+          <div className="hero-enter-d3 mt-12 flex flex-wrap items-center justify-center gap-4">
             <a
-              href="https://github.com/nasyrov-ai/hh-applicant-tool"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:brightness-110"
+              href="https://worksearch.1618.digital/setup"
+              className="group inline-flex items-center gap-2 rounded-xl bg-gold px-8 py-4 text-base font-bold text-bg-deep shadow-[0_4px_30px_rgba(212,175,55,0.25)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_50px_rgba(212,175,55,0.35)]"
             >
-              Get Started
+              Попробовать бесплатно
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </a>
             <a
               href="#features"
-              className="rounded-xl border border-border bg-card px-6 py-3 text-sm font-medium transition-colors hover:bg-accent"
+              className="rounded-xl border border-gold-border px-8 py-4 text-base font-semibold text-text-heading transition-all hover:border-gold/40 hover:bg-gold-glow"
             >
-              Learn More
+              Как это работает
             </a>
           </div>
         </div>
 
-        {/* Screenshot */}
+        {/* Hero screenshot */}
         <div className="hero-enter-img relative z-10 mx-auto mt-20 w-full max-w-5xl">
-          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+          <div className="gradient-border-card overflow-hidden shadow-2xl shadow-gold/[0.05]">
+            {/* Browser chrome */}
+            <div className="flex items-center gap-2 border-b border-white/[0.06] bg-bg-elevated px-4 py-3">
+              <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+              <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+              <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+              <span className="ml-auto font-mono text-xs text-text-dim">
+                worksearch.1618.digital
+              </span>
+            </div>
             <Image
               src="/screenshots/overview-dark.png"
-              alt="Dashboard Overview"
+              alt="WorkSearch Dashboard"
               width={1440}
               height={900}
               className="block"
               priority
             />
           </div>
+          {/* Glow behind */}
+          <div className="pointer-events-none absolute inset-0 -z-10 scale-[1.1] rounded-3xl bg-gold/[0.04] blur-[60px]" />
         </div>
 
-        {/* Spacer */}
-        <div className="h-24" />
+        <div className="h-32" />
       </section>
 
       {/* ---- Features ---- */}
-      <section id="features" className="border-t border-border bg-accent/50 px-6 py-28">
-        <div className="mx-auto max-w-6xl">
-          <AnimateOnScroll className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Everything you need</h2>
-            <p className="mt-3 text-muted-foreground">From auto-applying to tracking results — one tool handles the entire pipeline.</p>
-          </AnimateOnScroll>
+      <section id="features" className="relative z-10 px-6 py-28">
+        <div className="pointer-events-none absolute inset-0 bg-grid" />
+        <div className="relative mx-auto max-w-6xl">
+          <SectionReveal className="text-center">
+            <h2 className="text-[clamp(2rem,5vw,3rem)] font-[900] tracking-tight text-text-heading">
+              Всё что нужно для{" "}
+              <span className="text-gradient-gold">автопоиска</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-text-body">
+              От автоматических откликов до полного контроля — один инструмент
+              закрывает весь цикл поиска работы.
+            </p>
+          </SectionReveal>
 
-          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((f, i) => (
-              <AnimateOnScroll key={f.title} delay={i * 50}>
-                <div className="h-full rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5">
-                  <div className="mb-3 inline-flex rounded-lg bg-primary/10 p-2">
-                    <f.icon className="h-5 w-5 text-primary" />
+              <SectionReveal key={f.title} delay={i * 60}>
+                <div className="gradient-border-card group h-full p-6 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-gold/[0.05]">
+                  <div
+                    className={`mb-4 inline-flex rounded-xl p-2.5 ${
+                      f.accent === "gold"
+                        ? "bg-gold-glow text-gold"
+                        : "bg-emerald-glow text-emerald"
+                    }`}
+                  >
+                    <f.icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mb-1.5 font-semibold">{f.title}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+                  <h3 className="mb-2 text-base font-bold text-text-heading">
+                    {f.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-text-muted">
+                    {f.desc}
+                  </p>
+                  <ChevronRight className="mt-4 h-4 w-4 text-text-dim transition-all group-hover:translate-x-1 group-hover:text-gold" />
                 </div>
-              </AnimateOnScroll>
+              </SectionReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ---- Screenshots ---- */}
-      <section className="px-6 py-28">
+      <div className="section-divider" />
+
+      {/* ---- Dashboard ---- */}
+      <section id="dashboard" className="relative z-10 px-6 py-28">
         <div className="mx-auto max-w-6xl">
-          <AnimateOnScroll className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Dashboard in action</h2>
-            <p className="mt-3 text-muted-foreground">Monitor, control, and analyze — dark &amp; light modes included.</p>
-          </AnimateOnScroll>
+          <SectionReveal className="text-center">
+            <h2 className="text-[clamp(2rem,5vw,3rem)] font-[900] tracking-tight text-text-heading">
+              Дашборд{" "}
+              <span className="text-gradient-gold">реального времени</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-text-body">
+              Управляйте поиском работы из единого центра. Всё прозрачно,
+              всё под контролем.
+            </p>
+          </SectionReveal>
 
-          <div className="mt-14 grid gap-6 md:grid-cols-2">
-            {[
-              { src: "/screenshots/operations-dark.png", label: "Operations — Command Center" },
-              { src: "/screenshots/negotiations-dark.png", label: "Negotiations — Application Tracking" },
-              { src: "/screenshots/logs-dark.png", label: "Logs — Real-Time Execution" },
-              { src: "/screenshots/vacancies-dark.png", label: "Vacancies — Search Results" },
-            ].map((s, i) => (
-              <AnimateOnScroll key={s.label} delay={i * 80}>
-                <div className="overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-xl hover:shadow-primary/5">
-                  <Image src={s.src} alt={s.label} width={1440} height={900} className="block" />
+          <div className="mt-16 grid gap-6 md:grid-cols-2">
+            {screenshots.map((s, i) => (
+              <SectionReveal key={s.label} delay={i * 80}>
+                <div className="gradient-border-card group overflow-hidden transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-gold/[0.05]">
+                  <Image
+                    src={s.src}
+                    alt={s.label}
+                    width={1440}
+                    height={900}
+                    loading="lazy"
+                    className="block transition-transform duration-500 group-hover:scale-[1.02]"
+                  />
                 </div>
-                <p className="mt-2.5 text-center text-sm text-muted-foreground">{s.label}</p>
-              </AnimateOnScroll>
+                <p className="mt-3 text-center text-sm font-medium text-text-muted">
+                  {s.label}
+                </p>
+              </SectionReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ---- Architecture ---- */}
-      <section id="architecture" className="border-t border-border bg-accent/50 px-6 py-28">
-        <div className="mx-auto max-w-4xl">
-          <AnimateOnScroll className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Architecture</h2>
-            <p className="mt-3 text-muted-foreground">Three components, one database. Each user owns their data.</p>
-          </AnimateOnScroll>
+      <div className="section-divider" />
 
-          <div className="mt-14 grid gap-5 md:grid-cols-3">
+      {/* ---- How it works ---- */}
+      <section className="relative z-10 px-6 py-28">
+        <div className="pointer-events-none absolute inset-0 bg-grid" />
+        <div className="relative mx-auto max-w-4xl">
+          <SectionReveal className="text-center">
+            <h2 className="text-[clamp(2rem,5vw,3rem)] font-[900] tracking-tight text-text-heading">
+              Как это{" "}
+              <span className="text-gradient-gold">работает</span>
+            </h2>
+          </SectionReveal>
+
+          <div className="mt-16 space-y-0">
             {[
-              { icon: LayoutDashboard, color: "text-blue-400 bg-blue-500/10", dot: "bg-blue-400", title: "Dashboard", sub: "Vercel", items: ["Next.js 16 + React 19", "shadcn/ui + Tailwind 4", "Command palette (Cmd+K)", "Real-time status sync"] },
-              { icon: Database, color: "text-emerald-400 bg-emerald-500/10", dot: "bg-emerald-400", title: "Supabase", sub: "PostgreSQL", items: ["Command queue", "Application data", "Real-time subscriptions", "Row-level security"] },
-              { icon: Server, color: "text-orange-400 bg-orange-500/10", dot: "bg-orange-400", title: "Worker", sub: "VPS / Docker", items: ["Python CLI process", "Polls command queue", "Calls hh.ru API", "AI cover letter generation"] },
-            ].map((c, i) => (
-              <AnimateOnScroll key={c.title} delay={i * 80}>
-                <div className="h-full rounded-xl border border-border bg-card p-6">
-                  <div className={`mb-4 inline-flex rounded-lg p-2.5 ${c.color}`}>
-                    <c.icon className="h-5 w-5" />
+              {
+                step: "01",
+                title: "Подключите аккаунт",
+                desc: "Укажите cookie от hh.ru и выберите резюме. Setup Wizard настроит всё за 5 минут.",
+                icon: Settings,
+              },
+              {
+                step: "02",
+                title: "Настройте автопоиск",
+                desc: "Задайте поисковые запросы, фильтры по городу и зарплате, чёрный список компаний.",
+                icon: TrendingUp,
+              },
+              {
+                step: "03",
+                title: "AI работает за вас",
+                desc: "Воркер откликается на вакансии 24/7, пишет уникальные сопроводительные и отвечает работодателям.",
+                icon: Bot,
+              },
+              {
+                step: "04",
+                title: "Отслеживайте в дашборде",
+                desc: "Мониторьте отклики, переговоры и приглашения в реальном времени. Получайте уведомления в Telegram.",
+                icon: LayoutDashboard,
+              },
+            ].map((s, i) => (
+              <SectionReveal key={s.step} delay={i * 100}>
+                <div className="group flex items-start gap-6 border-l border-gold-border py-10 pl-8 transition-colors hover:border-gold/60">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gold-glow text-gold font-mono text-sm font-bold">
+                    {s.step}
                   </div>
-                  <h3 className="text-lg font-semibold">{c.title}</h3>
-                  <p className="mb-4 text-sm text-muted-foreground">{c.sub}</p>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    {c.items.map((item) => (
-                      <li key={item} className="flex items-center gap-2">
-                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${c.dot}`} />
-                        {item}
+                  <div>
+                    <h3 className="text-lg font-bold text-text-heading">
+                      {s.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-text-body">
+                      {s.desc}
+                    </p>
+                  </div>
+                </div>
+              </SectionReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
+      {/* ---- Pricing ---- */}
+      <section id="pricing" className="relative z-10 px-6 py-28">
+        <div className="mx-auto max-w-5xl">
+          <SectionReveal className="text-center">
+            <h2 className="text-[clamp(2rem,5vw,3rem)] font-[900] tracking-tight text-text-heading">
+              Простые{" "}
+              <span className="text-gradient-gold">тарифы</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-text-body">
+              Начните бесплатно, перейдите на Pro когда будете готовы.
+              Отмена в любой момент.
+            </p>
+          </SectionReveal>
+
+          <div className="mt-16 grid gap-6 md:grid-cols-3">
+            {plans.map((plan, i) => (
+              <SectionReveal key={plan.name} delay={i * 80}>
+                <div
+                  className={`relative flex h-full flex-col rounded-2xl border p-8 ${
+                    plan.popular
+                      ? "border-gold/30 bg-bg-surface pricing-popular mt-4 md:mt-0 md:scale-105"
+                      : "border-white/[0.08] bg-bg-surface"
+                  }`}
+                >
+                  {plan.popular && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gold px-5 py-1.5 text-xs font-bold text-bg-deep shadow-[0_4px_20px_rgba(212,175,55,0.3)]">
+                      Популярный
+                    </div>
+                  )}
+                  <div className="mb-6">
+                    <h3 className="text-lg font-bold text-text-heading">
+                      {plan.name}
+                    </h3>
+                    <p className="mt-1 text-sm text-text-muted">{plan.desc}</p>
+                  </div>
+                  <div className="mb-6">
+                    <span className="text-4xl font-[900] text-text-heading">
+                      {plan.price === "0" ? "Бесплатно" : `${plan.price} ₽`}
+                    </span>
+                    {plan.period && (
+                      <span className="text-sm text-text-muted">
+                        {plan.period}
+                      </span>
+                    )}
+                  </div>
+                  <ul className="mb-8 flex-1 space-y-3">
+                    {plan.features.map((f) => (
+                      <li
+                        key={f}
+                        className="flex items-start gap-3 text-sm text-text-body"
+                      >
+                        <Check
+                          className={`mt-0.5 h-4 w-4 shrink-0 ${
+                            plan.popular ? "text-gold" : "text-emerald"
+                          }`}
+                        />
+                        {f}
                       </li>
                     ))}
                   </ul>
+                  <a
+                    href={
+                      plan.name === "Business"
+                        ? "https://t.me/nsrv_1618"
+                        : "https://worksearch.1618.digital/setup"
+                    }
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-bold transition-all hover:-translate-y-0.5 ${
+                      plan.popular
+                        ? "bg-gold text-bg-deep shadow-[0_4px_30px_rgba(212,175,55,0.25)] hover:shadow-[0_8px_50px_rgba(212,175,55,0.35)]"
+                        : "border border-gold-border text-text-heading hover:border-gold/40 hover:bg-gold-glow"
+                    }`}
+                  >
+                    {plan.cta}
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
                 </div>
-              </AnimateOnScroll>
-            ))}
-          </div>
-
-          <AnimateOnScroll delay={250}>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-2 text-sm">
-              <span className="rounded-md bg-blue-500/10 px-3 py-1 font-medium text-blue-400">Dashboard</span>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <span className="rounded-md bg-emerald-500/10 px-3 py-1 font-medium text-emerald-400">Supabase</span>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <span className="rounded-md bg-orange-500/10 px-3 py-1 font-medium text-orange-400">Worker</span>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <span className="rounded-md bg-muted px-3 py-1 font-medium text-muted-foreground">hh.ru API</span>
-            </div>
-          </AnimateOnScroll>
-        </div>
-      </section>
-
-      {/* ---- Tech Stack ---- */}
-      <section id="stack" className="px-6 py-28">
-        <div className="mx-auto max-w-4xl">
-          <AnimateOnScroll className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Tech Stack</h2>
-            <p className="mt-3 text-muted-foreground">Modern tools, production-grade architecture.</p>
-          </AnimateOnScroll>
-
-          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {techStack.map((t, i) => (
-              <AnimateOnScroll key={t.label} delay={i * 50}>
-                <div className="rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/40">
-                  <div className="mb-3 flex items-center gap-2">
-                    <t.icon className="h-4 w-4 text-primary" />
-                    <span className="text-xs font-bold uppercase tracking-widest text-primary">{t.label}</span>
-                  </div>
-                  <p className="text-sm leading-relaxed text-card-foreground/80">{t.tech}</p>
-                </div>
-              </AnimateOnScroll>
+              </SectionReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ---- CTA ---- */}
-      <section className="border-t border-border bg-accent/50 px-6 py-28">
-        <AnimateOnScroll className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ready to automate?</h2>
-          <p className="mt-3 text-muted-foreground">Clone the repo, run the setup wizard, and start applying in minutes.</p>
+      <div className="section-divider" />
 
-          <div className="mt-8">
+      {/* ---- Final CTA ---- */}
+      <section className="relative z-10 px-6 py-28">
+        <SectionReveal className="mx-auto max-w-2xl text-center">
+          <h2 className="text-[clamp(2rem,5vw,3rem)] font-[900] tracking-tight text-text-heading">
+            Пока вы читаете,
+            <br />
+            <span className="text-shimmer-gold italic">
+              кто-то уже получает офферы
+            </span>
+          </h2>
+          <p className="mx-auto mt-6 max-w-lg text-text-body">
+            Подключите WorkSearch и начните получать приглашения
+            на собеседования уже сегодня.
+          </p>
+          <div className="mt-10">
             <a
-              href="https://github.com/nasyrov-ai/hh-applicant-tool"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:brightness-110"
+              href="https://worksearch.1618.digital/setup"
+              className="group inline-flex items-center gap-2 rounded-xl bg-gold px-10 py-4 text-base font-bold text-bg-deep shadow-[0_4px_30px_rgba(212,175,55,0.25)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_50px_rgba(212,175,55,0.35)]"
             >
-              <GithubIcon className="h-4 w-4" />
-              View on GitHub
+              Начать бесплатно
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </a>
           </div>
-
-          {/* Terminal */}
-          <div className="mx-auto mt-10 max-w-lg overflow-hidden rounded-xl border border-border bg-[oklch(0.08_0.005_260)] text-left">
-            <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
-              <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-              <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-              <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-              <span className="ml-auto font-mono text-xs text-muted-foreground/50">terminal</span>
-            </div>
-            <pre className="p-5 font-mono text-sm leading-7"><span className="text-primary">$</span> <span className="text-foreground/80">git clone https://github.com/nasyrov-ai/hh-applicant-tool.git</span>{"\n"}<span className="text-primary">$</span> <span className="text-foreground/80">cd hh-applicant-tool</span>{"\n"}<span className="text-primary">$</span> <span className="text-foreground/80">pip install -e .</span>{"\n"}<span className="text-primary">$</span> <span className="text-foreground/80">hh-applicant-tool setup</span></pre>
-          </div>
-        </AnimateOnScroll>
+        </SectionReveal>
       </section>
 
       {/* ---- Footer ---- */}
-      <footer className="border-t border-border px-6 py-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between text-sm text-muted-foreground">
-          <span>hh-applicant-tool</span>
-          <div className="flex items-center gap-4">
-            <a href="https://github.com/nasyrov-ai/hh-applicant-tool" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">GitHub</a>
-            <span>MIT License</span>
+      <footer className="relative z-10 border-t border-white/[0.06] px-6 py-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-gradient-gold text-lg font-extrabold">
+                  1.618
+                </span>
+                <span className="text-sm font-semibold text-text-heading">
+                  WorkSearch
+                </span>
+              </div>
+              <p className="mt-2 text-sm text-text-muted">
+                AI-автопилот для поиска работы на hh.ru
+              </p>
+            </div>
+
+            <div className="flex items-center gap-6 text-sm text-text-muted">
+              <a
+                href="#features"
+                className="transition-colors hover:text-text-heading"
+              >
+                Возможности
+              </a>
+              <a
+                href="#dashboard"
+                className="transition-colors hover:text-text-heading"
+              >
+                Дашборд
+              </a>
+              <a
+                href="#pricing"
+                className="transition-colors hover:text-text-heading"
+              >
+                Тарифы
+              </a>
+              <a
+                href="https://t.me/nsrv_1618"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-gold"
+              >
+                Telegram
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-10 border-t border-white/[0.04] pt-6 text-center text-xs text-text-dim">
+            &copy; 2026 Рустам Насыров &mdash; 1.618
           </div>
         </div>
       </footer>

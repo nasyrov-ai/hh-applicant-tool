@@ -1,15 +1,43 @@
 import type { Metadata } from "next";
+import { Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
+const manrope = Manrope({
+  subsets: ["latin", "cyrillic"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-manrope",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-jetbrains",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  metadataBase: new URL("http://204.168.135.143:8080"),
-  title: "hh-applicant-tool — Automated Job Applications for hh.ru",
+  metadataBase: new URL("https://worksearch.1618.digital"),
+  title: "1.618 WorkSearch — AI-автопилот для поиска работы на hh.ru",
   description:
-    "Self-hosted job application engine with AI cover letters, real-time dashboard, and remote worker architecture for HeadHunter (hh.ru).",
+    "Автоматические отклики с AI-сопроводительными, авто-ответы работодателям, дашборд реального времени. Подключись по подписке.",
   openGraph: {
-    title: "hh-applicant-tool",
+    title: "1.618 WorkSearch",
     description:
-      "Automated job application engine for hh.ru with AI-powered cover letters and a real-time dashboard.",
+      "AI-движок для поиска работы на hh.ru. Отклики, сопроводительные, авто-ответы — всё на автопилоте.",
+    images: [
+      {
+        url: "/screenshots/overview-dark.png",
+        width: 1440,
+        height: 900,
+        alt: "1.618 WorkSearch Dashboard",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "1.618 WorkSearch",
+    description: "AI-автопилот для поиска работы на hh.ru",
     images: ["/screenshots/overview-dark.png"],
   },
 };
@@ -20,19 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="ru" className={`dark ${manrope.variable} ${jetbrainsMono.variable}`}>
       <body>{children}</body>
     </html>
   );
