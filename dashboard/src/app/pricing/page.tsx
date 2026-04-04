@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Rocket, MessageCircle, ArrowLeft } from "lucide-react";
 
-export const metadata = { title: "Тарифы — 1.618 worksearch" };
+export const metadata = { title: "Тарифы" };
 
 const PLANS = [
   {

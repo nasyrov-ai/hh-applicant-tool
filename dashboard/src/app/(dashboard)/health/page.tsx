@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime } from "@/lib/utils";
+import { REVALIDATE } from "@/lib/constants";
 import {
   Activity,
   Server,
@@ -12,8 +13,8 @@ import {
   XCircle,
 } from "lucide-react";
 
-export const metadata = { title: "Здоровье — 1.618 worksearch" };
-export const revalidate = 30;
+export const metadata = { title: "Здоровье" };
+export const revalidate = REVALIDATE.fast;
 
 interface WorkerRow {
   worker_id: string;

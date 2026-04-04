@@ -3,12 +3,13 @@ import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { BlacklistActions } from "./blacklist-actions";
 import { BlacklistRow } from "./blacklist-row";
-import { Card, CardContent } from "@/components/ui/card";
+import { ErrorCard } from "@/components/error-card";
+import { REVALIDATE } from "@/lib/constants";
 import { Ban } from "lucide-react";
 import type { BlacklistEntry } from "@/lib/types";
 
-export const metadata = { title: "Блэклист — 1.618 worksearch" };
-export const revalidate = 30;
+export const metadata = { title: "Блэклист" };
+export const revalidate = REVALIDATE.fast;
 
 export default async function BlacklistPage() {
   const supabase = createStaticSupabase();
@@ -23,11 +24,7 @@ export default async function BlacklistPage() {
     return (
       <div className="animate-fade-in">
         <PageHeader title="Блэклист" description="Ошибка загрузки" />
-        <Card className="border-destructive/50">
-          <CardContent className="flex h-40 items-center justify-center">
-            <p className="text-sm text-destructive">Не удалось загрузить данные.</p>
-          </CardContent>
-        </Card>
+        <ErrorCard message="Не удалось загрузить данные." />
       </div>
     );
   }

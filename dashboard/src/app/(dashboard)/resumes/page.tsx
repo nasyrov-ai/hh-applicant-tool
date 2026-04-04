@@ -5,10 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime, formatNumber } from "@/lib/utils";
 import type { Resume } from "@/lib/types";
+import { ErrorCard } from "@/components/error-card";
+import { REVALIDATE } from "@/lib/constants";
 import { Eye, ExternalLink, FileText, RefreshCw } from "lucide-react";
 
-export const metadata = { title: "Резюме — 1.618 worksearch" };
-export const revalidate = 60;
+export const metadata = { title: "Резюме" };
+export const revalidate = REVALIDATE.normal;
 
 export default async function ResumesPage() {
   const supabase = createStaticSupabase();
@@ -23,13 +25,7 @@ export default async function ResumesPage() {
     return (
       <div className="animate-fade-in">
         <PageHeader title="Резюме" description="Ошибка загрузки" />
-        <Card className="border-destructive/50">
-          <CardContent className="flex h-40 items-center justify-center">
-            <p className="text-sm text-destructive">
-              Не удалось загрузить резюме. Попробуйте обновить страницу.
-            </p>
-          </CardContent>
-        </Card>
+        <ErrorCard message="Не удалось загрузить резюме. Попробуйте обновить страницу." />
       </div>
     );
   }

@@ -1,10 +1,11 @@
 import { createStaticSupabase } from "@/lib/supabase-static";
 import { PageHeader } from "@/components/page-header";
+import { REVALIDATE } from "@/lib/constants";
 import { SchedulePresets } from "./schedule-presets";
 import { SchedulesList } from "./schedules-list";
 
-export const metadata = { title: "Расписание — 1.618 worksearch" };
-export const revalidate = 30;
+export const metadata = { title: "Расписание" };
+export const revalidate = REVALIDATE.fast;
 
 export default async function SchedulesPage() {
   const supabase = createStaticSupabase();

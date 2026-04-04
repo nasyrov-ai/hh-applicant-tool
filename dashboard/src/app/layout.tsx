@@ -17,7 +17,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "1.618 WorkSearch",
+  title: { template: "%s — 1.618 WorkSearch", default: "1.618 WorkSearch" },
   description: "AI-автопилот для поиска работы на hh.ru",
   icons: {
     icon: [

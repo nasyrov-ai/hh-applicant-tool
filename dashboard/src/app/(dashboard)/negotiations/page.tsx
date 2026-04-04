@@ -3,6 +3,8 @@ import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { ErrorCard } from "@/components/error-card";
+import { REVALIDATE } from "@/lib/constants";
 import {
   Table,
   TableBody,
@@ -20,8 +22,8 @@ import { NegotiationsKanban } from "./kanban";
 import { ViewToggle } from "./view-toggle";
 import { ExportButton } from "./export-button";
 
-export const metadata = { title: "Отклики — 1.618 worksearch" };
-export const revalidate = 60;
+export const metadata = { title: "Отклики" };
+export const revalidate = REVALIDATE.normal;
 
 interface SearchParams {
   state?: string;
@@ -80,13 +82,7 @@ export default async function NegotiationsPage({
     return (
       <div className="animate-fade-in">
         <PageHeader title="Отклики" description="Ошибка загрузки" />
-        <Card className="border-destructive/50">
-          <CardContent className="flex h-40 items-center justify-center">
-            <p className="text-sm text-destructive">
-              Не удалось загрузить отклики. Попробуйте обновить страницу.
-            </p>
-          </CardContent>
-        </Card>
+        <ErrorCard message="Не удалось загрузить отклики. Попробуйте обновить страницу." />
       </div>
     );
   }

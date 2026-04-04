@@ -5,11 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDateTime, commandStatusVariant, commandStatusLabel } from "@/lib/utils";
 import type { Command } from "@/lib/types";
+import { ErrorCard } from "@/components/error-card";
+import { REVALIDATE } from "@/lib/constants";
 import Link from "next/link";
 import { ChevronRight, ScrollText } from "lucide-react";
 
-export const metadata = { title: "Логи — 1.618 worksearch" };
-export const revalidate = 60;
+export const metadata = { title: "Логи" };
+export const revalidate = REVALIDATE.normal;
 
 export default async function LogsPage() {
   const supabase = createStaticSupabase();
@@ -24,11 +26,7 @@ export default async function LogsPage() {
     return (
       <div className="animate-fade-in">
         <PageHeader title="Логи" description="Ошибка загрузки" />
-        <Card className="border-destructive/50">
-          <CardContent className="flex h-40 items-center justify-center">
-            <p className="text-sm text-destructive">Не удалось загрузить логи.</p>
-          </CardContent>
-        </Card>
+        <ErrorCard message="Не удалось загрузить логи." />
       </div>
     );
   }

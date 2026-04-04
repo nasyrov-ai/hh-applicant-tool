@@ -12,7 +12,7 @@ import {
   Rocket,
 } from "lucide-react";
 
-export const metadata = { title: "Demo — 1.618 worksearch" };
+export const metadata = { title: "Demo" };
 
 const MOCK_KPI = {
   total: 847,

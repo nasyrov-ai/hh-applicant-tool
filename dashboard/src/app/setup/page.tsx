@@ -1,6 +1,6 @@
 import { SetupWizard } from "./setup-wizard";
 
-export const metadata = { title: "Настройка — 1.618 worksearch" };
+export const metadata = { title: "Настройка" };
 
 export default function SetupPage() {
   return (

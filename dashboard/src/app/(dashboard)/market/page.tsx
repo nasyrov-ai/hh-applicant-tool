@@ -11,6 +11,7 @@ import {
   Star,
   Eye,
 } from "lucide-react";
+import { REVALIDATE } from "@/lib/constants";
 import { getMarketData, type Period } from "./queries";
 import dynamic from "next/dynamic";
 
@@ -28,8 +29,8 @@ const PeriodSelector = dynamic(
   () => import("../analytics/period-selector").then((m) => m.PeriodSelector),
 );
 
-export const metadata = { title: "Рынок — 1.618 worksearch" };
-export const revalidate = 60;
+export const metadata = { title: "Рынок" };
+export const revalidate = REVALIDATE.normal;
 
 export default async function MarketPage({
   searchParams,

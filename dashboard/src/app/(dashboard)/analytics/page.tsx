@@ -2,6 +2,7 @@ import { KpiCard } from "@/components/kpi-card";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatNumber } from "@/lib/utils";
+import { REVALIDATE } from "@/lib/constants";
 import { Send, UserCheck, XCircle, TrendingUp, Clock, Wifi, Briefcase, FileText } from "lucide-react";
 import { getAnalyticsData, type Period } from "./queries";
 import { RejectionCard } from "./rejection-card";
@@ -21,8 +22,8 @@ const PeriodSelector = dynamic(
   () => import("./period-selector").then((m) => m.PeriodSelector),
 );
 
-export const metadata = { title: "Аналитика — 1.618 worksearch" };
-export const revalidate = 60;
+export const metadata = { title: "Аналитика" };
+export const revalidate = REVALIDATE.normal;
 
 export default async function AnalyticsPage({
   searchParams,

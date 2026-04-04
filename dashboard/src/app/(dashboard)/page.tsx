@@ -4,6 +4,8 @@ import type { RecentActivity } from "@/lib/types";
 import { KpiCard } from "@/components/kpi-card";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ErrorCard } from "@/components/error-card";
+import { REVALIDATE } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import {
   Send,
@@ -24,8 +26,8 @@ const OverviewChart = dynamic(
   }
 );
 
-export const metadata = { title: "Обзор — 1.618 worksearch" };
-export const revalidate = 60;
+export const metadata = { title: "Обзор" };
+export const revalidate = REVALIDATE.normal;
 
 async function getStats(supabase: ReturnType<typeof createStaticSupabase>) {
   const db = supabase;
@@ -105,13 +107,7 @@ export default async function OverviewPage() {
     return (
       <div className="animate-fade-in">
         <PageHeader title="Обзор" description="Общая статистика по откликам и вакансиям" />
-        <Card className="border-destructive/50">
-          <CardContent className="flex h-40 items-center justify-center">
-            <p className="text-sm text-destructive">
-              Не удалось загрузить данные. Попробуйте обновить страницу.
-            </p>
-          </CardContent>
-        </Card>
+        <ErrorCard message="Не удалось загрузить данные. Попробуйте обновить страницу." />
       </div>
     );
   }

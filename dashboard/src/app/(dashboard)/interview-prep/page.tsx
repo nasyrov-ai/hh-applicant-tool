@@ -5,10 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { GraduationCap, ExternalLink, Sparkles } from "lucide-react";
 import { CopyButton } from "./copy-button";
+import { REVALIDATE } from "@/lib/constants";
 import { experienceLabel } from "@/lib/utils";
 
-export const metadata = { title: "Подготовка к собесу — 1.618 worksearch" };
-export const revalidate = 60;
+export const metadata = { title: "Подготовка к собесу" };
+export const revalidate = REVALIDATE.normal;
 
 interface NegRow {
   id: string;

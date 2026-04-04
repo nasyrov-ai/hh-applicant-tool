@@ -15,10 +15,12 @@ import { formatSalary, formatDate, experienceLabel } from "@/lib/utils";
 import type { Vacancy } from "@/lib/types";
 import { Pagination } from "@/components/pagination";
 import { VacanciesFilter } from "./filter";
+import { ErrorCard } from "@/components/error-card";
+import { PAGE_SIZE, REVALIDATE } from "@/lib/constants";
 import { Briefcase, ExternalLink, MapPin, Wifi } from "lucide-react";
 
-export const metadata = { title: "Вакансии — 1.618 worksearch" };
-export const revalidate = 60;
+export const metadata = { title: "Вакансии" };
+export const revalidate = REVALIDATE.normal;
 
 interface SearchParams {
   page?: string;
@@ -26,8 +28,6 @@ interface SearchParams {
   remote?: string;
   salary_min?: string;
 }
-
-const PAGE_SIZE = 30;
 
 export default async function VacanciesPage({
   searchParams,
@@ -63,13 +63,7 @@ export default async function VacanciesPage({
     return (
       <div className="animate-fade-in">
         <PageHeader title="Вакансии" description="Ошибка загрузки" />
-        <Card className="border-destructive/50">
-          <CardContent className="flex h-40 items-center justify-center">
-            <p className="text-sm text-destructive">
-              Не удалось загрузить вакансии. Попробуйте обновить страницу.
-            </p>
-          </CardContent>
-        </Card>
+        <ErrorCard message="Не удалось загрузить вакансии. Попробуйте обновить страницу." />
       </div>
     );
   }

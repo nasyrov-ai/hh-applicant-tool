@@ -1,9 +1,10 @@
 import { createStaticSupabase } from "@/lib/supabase-static";
 import { PageHeader } from "@/components/page-header";
+import { REVALIDATE } from "@/lib/constants";
 import { SettingsForm } from "./settings-form";
 
-export const metadata = { title: "Настройки — 1.618 worksearch" };
-export const revalidate = 30;
+export const metadata = { title: "Настройки" };
+export const revalidate = REVALIDATE.fast;
 
 export default async function SettingsPage() {
   const supabase = createStaticSupabase();

@@ -4,17 +4,17 @@ import { EmptyState } from "@/components/empty-state";
 import { Pagination } from "@/components/pagination";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ErrorCard } from "@/components/error-card";
+import { PAGE_SIZE, REVALIDATE } from "@/lib/constants";
 import { Building2, ExternalLink, Globe, Mail, MapPin } from "lucide-react";
 import type { Employer, EmployerSite } from "@/lib/types";
 
-export const metadata = { title: "Работодатели — 1.618 worksearch" };
-export const revalidate = 60;
+export const metadata = { title: "Работодатели" };
+export const revalidate = REVALIDATE.normal;
 
 interface SearchParams {
   page?: string;
 }
-
-const PAGE_SIZE = 30;
 
 export default async function EmployersPage({
   searchParams,
@@ -37,13 +37,7 @@ export default async function EmployersPage({
     return (
       <div className="animate-fade-in">
         <PageHeader title="Работодатели" description="Ошибка загрузки" />
-        <Card className="border-destructive/50">
-          <CardContent className="flex h-40 items-center justify-center">
-            <p className="text-sm text-destructive">
-              Не удалось загрузить работодателей. Попробуйте обновить страницу.
-            </p>
-          </CardContent>
-        </Card>
+        <ErrorCard message="Не удалось загрузить работодателей. Попробуйте обновить страницу." />
       </div>
     );
   }
