@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createStaticSupabase } from "@/lib/supabase-static";
 import { formatDateTime, stateLabel, stateColor, formatNumber, stateBadgeVariant } from "@/lib/utils";
 import type { RecentActivity } from "@/lib/types";
 import { KpiCard } from "@/components/kpi-card";
@@ -27,7 +27,7 @@ const OverviewChart = dynamic(
 export const metadata = { title: "Обзор — 1.618 worksearch" };
 export const revalidate = 60;
 
-async function getStats(supabase: Awaited<ReturnType<typeof createServerSupabase>>) {
+async function getStats(supabase: ReturnType<typeof createStaticSupabase>) {
   const db = supabase;
 
   const thirtyDaysAgo = new Date();
@@ -96,7 +96,7 @@ async function getStats(supabase: Awaited<ReturnType<typeof createServerSupabase
 }
 
 export default async function OverviewPage() {
-  const supabase = await createServerSupabase();
+  const supabase = createStaticSupabase();
 
   let stats;
   try {

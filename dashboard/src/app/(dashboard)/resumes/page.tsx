@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createStaticSupabase } from "@/lib/supabase-static";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +11,7 @@ export const metadata = { title: "Резюме — 1.618 worksearch" };
 export const revalidate = 60;
 
 export default async function ResumesPage() {
-  const supabase = await createServerSupabase();
+  const supabase = createStaticSupabase();
 
   const { data: resumes, error } = await supabase
     .from("resumes")

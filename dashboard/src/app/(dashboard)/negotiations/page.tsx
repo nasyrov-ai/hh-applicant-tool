@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createStaticSupabase } from "@/lib/supabase-static";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -11,11 +11,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDateTime, stateLabel, stateBadgeVariant } from "@/lib/utils";
+import { formatDateTime, stateLabel, stateBadgeVariant, isInvitation } from "@/lib/utils";
 import type { Negotiation } from "@/lib/types";
 import { MessagesSquare } from "lucide-react";
 import { Pagination } from "@/components/pagination";
 import { NegotiationsFilter } from "./filter";
+import { NegotiationsKanban } from "./kanban";
+import { ViewToggle } from "./view-toggle";
+import { ExportButton } from "./export-button";
 
 export const metadata = { title: "Отклики — 1.618 worksearch" };
 export const revalidate = 60;
@@ -24,9 +27,11 @@ interface SearchParams {
   state?: string;
   page?: string;
   q?: string;
+  view?: string;
 }
 
 const PAGE_SIZE = 25;
+const KANBAN_LIMIT = 20;
 
 export default async function NegotiationsPage({
   searchParams,
@@ -34,11 +39,17 @@ export default async function NegotiationsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const supabase = await createServerSupabase();
-  const page = Math.max(1, parseInt(params.page || "1", 10));
+  const supabase = createStaticSupabase();
+  const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
   const stateFilter = params.state || "";
   const search = params.q || "";
+  const view = params.view === "kanban" ? "kanban" : "table";
 
+  if (view === "kanban") {
+    return <KanbanView stateFilter={stateFilter} search={search} />;
+  }
+
+  // Table view (existing logic)
   let query = supabase
     .from("negotiations")
     .select(
@@ -89,7 +100,22 @@ export default async function NegotiationsPage({
         description={`Всего: ${count || 0}`}
       />
 
-      <NegotiationsFilter currentState={stateFilter} currentSearch={search} />
+      <div className="flex items-center justify-between gap-4">
+        <NegotiationsFilter currentState={stateFilter} currentSearch={search} />
+        <div className="flex items-center gap-2">
+          <ExportButton
+            data={(negotiations || []).map((n: Negotiation) => ({
+              id: n.id,
+              state: n.state,
+              vacancy_id: n.vacancy_id,
+              employer_id: n.employer_id,
+              created_at: n.created_at,
+              updated_at: n.updated_at,
+            }))}
+          />
+          <ViewToggle current={view} />
+        </div>
+      </div>
 
       <Card className="mt-4 overflow-x-auto">
         <CardContent className="p-0">
@@ -154,6 +180,128 @@ export default async function NegotiationsPage({
         baseHref="/negotiations"
         params={{ state: stateFilter, q: search }}
       />
+    </div>
+  );
+}
+
+async function KanbanView({
+  stateFilter,
+  search,
+}: {
+  stateFilter: string;
+  search: string;
+}) {
+  const supabase = createStaticSupabase();
+
+  // Fetch negotiations for kanban with SQL-level filters
+  let kanbanQuery = supabase
+    .from("negotiations")
+    .select("id, state, vacancy_id, employer_id, updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(150);
+
+  // Push search filter to SQL
+  if (search) {
+    const parsed = parseInt(search, 10);
+    if (!isNaN(parsed)) {
+      kanbanQuery = kanbanQuery.eq("vacancy_id", parsed);
+    }
+  }
+
+  // Push state filter to SQL
+  if (stateFilter === "invitation") {
+    kanbanQuery = kanbanQuery.or("state.eq.interview,state.like.invitation%");
+  } else if (stateFilter === "discard") {
+    kanbanQuery = kanbanQuery.eq("state", "discard");
+  } else if (stateFilter === "active") {
+    kanbanQuery = kanbanQuery.not("state", "eq", "discard").not("state", "eq", "interview").not("state", "like", "invitation%");
+  }
+
+  const { data: allNegs } = await kanbanQuery;
+
+  const negs = (allNegs ?? []) as {
+    id: string;
+    state: string;
+    vacancy_id: number;
+    employer_id: number | null;
+    updated_at: string;
+  }[];
+
+  // Fetch vacancy names for display
+  const vacancyIds = [...new Set(negs.map((n) => n.vacancy_id))];
+  const { data: vacancies } = vacancyIds.length > 0
+    ? await supabase
+        .from("vacancies")
+        .select("id, name")
+        .in("id", vacancyIds.slice(0, 500))
+    : { data: [] };
+
+  const vacMap = new Map<number, string>();
+  for (const v of (vacancies ?? []) as { id: number; name: string }[]) {
+    vacMap.set(v.id, v.name);
+  }
+
+  // Bucket negotiations
+  const buckets: Record<string, typeof negs> = {
+    response: [],
+    active: [],
+    invitation: [],
+    discard: [],
+  };
+
+  for (const n of negs) {
+    if (isInvitation(n.state)) {
+      buckets.invitation.push(n);
+    } else if (n.state === "discard") {
+      buckets.discard.push(n);
+    } else if (n.state === "response" || n.state === "sent") {
+      buckets.response.push(n);
+    } else {
+      buckets.active.push(n);
+    }
+  }
+
+  // Apply state filter to visible columns
+  const allColumns = [
+    { id: "response", label: "Отклик", items: buckets.response },
+    { id: "active", label: "Активный", items: buckets.active },
+    { id: "invitation", label: "Приглашение", items: buckets.invitation },
+    { id: "discard", label: "Отказ", items: buckets.discard },
+  ];
+
+  const filteredColumns =
+    stateFilter === "invitation"
+      ? allColumns.filter((c) => c.id === "invitation")
+      : stateFilter === "discard"
+        ? allColumns.filter((c) => c.id === "discard")
+        : stateFilter === "active"
+          ? allColumns.filter((c) => c.id !== "invitation" && c.id !== "discard")
+          : allColumns;
+
+  const columns = filteredColumns.map((col) => ({
+    ...col,
+    total: col.items.length,
+    items: col.items.slice(0, KANBAN_LIMIT).map((n) => ({
+      ...n,
+      vacancy_name: vacMap.get(n.vacancy_id) ?? null,
+    })),
+  }));
+
+  const totalCount = negs.length;
+
+  return (
+    <div className="animate-fade-in">
+      <PageHeader
+        title="Отклики"
+        description={`Всего: ${totalCount}`}
+      />
+
+      <div className="flex items-center justify-between gap-4">
+        <NegotiationsFilter currentState={stateFilter} currentSearch={search} />
+        <ViewToggle current="kanban" />
+      </div>
+
+      <NegotiationsKanban columns={columns} />
     </div>
   );
 }

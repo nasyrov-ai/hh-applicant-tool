@@ -3,8 +3,12 @@ import { Manrope } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorkerRegister } from "@/components/sw-register";
-import { CursorGlow } from "@/components/cursor-glow";
+import dynamic from "next/dynamic";
 import "./globals.css";
+
+const CursorGlow = dynamic(() =>
+  import("@/components/cursor-glow").then((m) => m.CursorGlow)
+);
 
 const manrope = Manrope({
   subsets: ["latin", "cyrillic"],
@@ -13,8 +17,15 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "1.618 worksearch",
-  description: "Платформа управления поиском работы",
+  title: "1.618 WorkSearch",
+  description: "AI-автопилот для поиска работы на hh.ru",
+  icons: {
+    icon: [
+      { url: "/brand/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/brand/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/brand/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

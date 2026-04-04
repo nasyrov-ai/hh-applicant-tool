@@ -25,6 +25,7 @@ const COMMANDS = [
   { value: "clear-negotiations", label: "Очистить отказы" },
   { value: "sync-db", label: "Синхронизация БД" },
   { value: "refresh-token", label: "Обновить токен" },
+  { value: "hot-vacancies", label: "Горячие вакансии" },
 ];
 
 const CRON_PRESETS = [

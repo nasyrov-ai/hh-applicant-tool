@@ -243,16 +243,25 @@ export interface Database {
       };
       worker_status: {
         Row: {
+          worker_id: string;
           status: string;
           last_seen_at: string;
+          version: string | null;
+          hostname: string | null;
         };
         Insert: {
-          status: string;
-          last_seen_at?: string;
-        };
-        Update: {
+          worker_id: string;
           status?: string;
           last_seen_at?: string;
+          version?: string | null;
+          hostname?: string | null;
+        };
+        Update: {
+          worker_id?: string;
+          status?: string;
+          last_seen_at?: string;
+          version?: string | null;
+          hostname?: string | null;
         };
         Relationships: [];
       };
@@ -354,6 +363,63 @@ export interface Database {
           name?: string | null;
           email?: string | null;
           phones?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      employer_watchlist: {
+        Row: {
+          employer_id: number;
+          employer_name: string;
+          notify: boolean;
+          created_at: string;
+        };
+        Insert: {
+          employer_id: number;
+          employer_name: string;
+          notify?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          employer_id?: number;
+          employer_name?: string;
+          notify?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      application_messages: {
+        Row: {
+          id: string;
+          negotiation_id: number | null;
+          vacancy_id: number;
+          resume_id: string;
+          employer_id: number | null;
+          message_text: string;
+          message_type: string;
+          ai_model: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          negotiation_id?: number | null;
+          vacancy_id: number;
+          resume_id: string;
+          employer_id?: number | null;
+          message_text: string;
+          message_type?: string;
+          ai_model?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          negotiation_id?: number | null;
+          vacancy_id?: number;
+          resume_id?: string;
+          employer_id?: number | null;
+          message_text?: string;
+          message_type?: string;
+          ai_model?: string | null;
           created_at?: string;
         };
         Relationships: [];

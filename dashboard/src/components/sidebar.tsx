@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { Menu } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-import { createBrowserSupabase } from "@/lib/supabase-client";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -54,73 +53,25 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function WorkerIndicator() {
-  const [status, setStatus] = useState<"online" | "offline" | "unknown">("unknown");
+// StatusIndicators lazy-loaded: defers Supabase client + realtime subscriptions
+// until after initial paint, keeping the sidebar shell interactive immediately.
+const LazyStatusIndicators = lazy(() =>
+  import("@/components/status-indicators").then((m) => ({
+    default: m.StatusIndicators,
+  }))
+);
 
-  useEffect(() => {
-    const supabase = createBrowserSupabase();
-
-    supabase
-      .from("worker_status")
-      .select("status, last_seen_at")
-      .order("last_seen_at", { ascending: false })
-      .limit(1)
-      .single()
-      .then(({ data }: { data: { status: string; last_seen_at: string } | null }) => {
-        if (!data) {
-          setStatus("unknown");
-          return;
-        }
-        const lastSeen = new Date(data.last_seen_at);
-        const stale = Date.now() - lastSeen.getTime() > 60_000;
-        setStatus(stale ? "offline" : (data.status as "online" | "offline"));
-      });
-
-    const channel = supabase
-      .channel("worker-status")
-      .on(
-        "postgres_changes" as "system",
-        { event: "*", schema: "public", table: "worker_status" } as Record<string, string>,
-        (payload: { new: { status: string; last_seen_at: string } }) => {
-          const row = payload.new;
-          if (row?.status) setStatus(row.status as "online" | "offline");
-        }
-      )
-      .subscribe((status: string) => {
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          setStatus("unknown");
-        }
-      });
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const color =
-    status === "online"
-      ? "bg-success shadow-success/40 shadow-sm"
-      : status === "offline"
-        ? "bg-destructive"
-        : "bg-muted-foreground";
-
-  const label =
-    status === "online"
-      ? "Воркер онлайн"
-      : status === "offline"
-        ? "Воркер офлайн"
-        : "Воркер —";
-
+function StatusIndicatorsFallback() {
   return (
-    <div className="flex items-center gap-2.5">
-      <span
-        className={cn(
-          "h-2 w-2 rounded-full transition-all",
-          color,
-          status === "online" && "animate-pulse"
-        )}
-      />
-      <span className="text-xs font-medium text-sidebar-foreground">{label}</span>
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center gap-2">
+        <span className="h-2 w-2 rounded-full bg-muted-foreground" />
+        <span className="text-xs font-medium text-sidebar-foreground">Worker</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="h-2 w-2 rounded-full bg-muted-foreground" />
+        <span className="text-xs font-medium text-sidebar-foreground">Claude</span>
+      </div>
     </div>
   );
 }
@@ -128,18 +79,20 @@ function WorkerIndicator() {
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-14 items-center gap-2.5 px-4">
-        <Image src="/logo.svg" alt="1.618" width={24} height={24} className="invert opacity-80" />
-        <span className="font-semibold tracking-tight text-sm">
-          <span className="text-gradient-gold">1.618</span>
-          <span className="text-muted-foreground ml-1.5 font-normal">worksearch</span>
-        </span>
+      <div className="flex h-14 items-center gap-3 px-4">
+        <Image src="/logo-icon.png" alt="1.618 WorkSearch" width={28} height={28} className="rounded-lg shadow-[0_0_12px_rgba(212,175,55,0.2)]" />
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-gradient-gold text-base font-extrabold tracking-tight">1.618</span>
+          <span className="text-sm font-medium text-foreground/70">WorkSearch</span>
+        </div>
       </div>
       <Separator className="bg-sidebar-border" />
       <NavLinks onNavigate={onNavigate} />
       <Separator className="bg-sidebar-border" />
       <div className="flex items-center justify-between px-4 py-3">
-        <WorkerIndicator />
+        <Suspense fallback={<StatusIndicatorsFallback />}>
+          <LazyStatusIndicators />
+        </Suspense>
         <ThemeToggle />
       </div>
     </div>
@@ -171,7 +124,7 @@ export function MobileHeader() {
         </SheetContent>
       </Sheet>
       <div className="flex items-center gap-2.5">
-        <Image src="/logo.svg" alt="1.618" width={24} height={24} className="invert opacity-80" />
+        <Image src="/logo-icon.png" alt="1.618" width={24} height={24} className="rounded-md" />
         <span className="font-semibold tracking-tight text-sm">
           <span className="text-gradient-gold">1.618</span>
           <span className="text-muted-foreground ml-1.5 font-normal">worksearch</span>

@@ -3,17 +3,16 @@
 import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { assertAuth } from "@/lib/auth";
+import { ALLOWED_COMMANDS } from "@/lib/commands";
 
-const ALLOWED_COMMANDS = [
-  "apply-vacancies",
-  "reply-employers",
-  "update-resumes",
-  "clear-negotiations",
-  "sync-db",
-  "refresh-token",
+const ALLOWED_ARG_KEYS = [
+  "resume_id", "area_id", "limit", "dry_run",
+  "search", "total-pages", "use-ai",
+  "period",
+  "delete-chat", "blacklist-discard", "block-ats",
+  "full",
+  "hours", "top", "salary-multiplier",
 ] as const;
-
-const ALLOWED_ARG_KEYS = ["resume_id", "area_id", "limit", "dry_run"] as const;
 
 const executeCommandSchema = z.object({
   command: z.enum(ALLOWED_COMMANDS),
@@ -79,15 +78,42 @@ export async function getActiveCommands(): Promise<
   return data || [];
 }
 
+const uuidSchema = z.string().uuid();
+
 export async function cancelCommand(commandId: string) {
+  const parsed = uuidSchema.safeParse(commandId);
+  if (!parsed.success) throw new Error("Invalid command ID");
+
   await assertAuth();
   const supabase = await createServerSupabase();
 
   const { error } = await supabase
     .from("command_queue")
     .update({ status: "cancelled" })
-    .eq("id", commandId)
+    .eq("id", parsed.data)
     .in("status", ["pending", "running"]);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function retryCommand(commandId: string) {
+  const parsed = uuidSchema.safeParse(commandId);
+  if (!parsed.success) throw new Error("Invalid command ID");
+
+  await assertAuth();
+  const supabase = await createServerSupabase();
+
+  const { error } = await supabase
+    .from("command_queue")
+    .update({
+      status: "pending",
+      exit_code: null,
+      error_message: null,
+      started_at: null,
+      completed_at: null,
+    })
+    .eq("id", parsed.data)
+    .eq("status", "failed");
 
   if (error) throw new Error(error.message);
 }

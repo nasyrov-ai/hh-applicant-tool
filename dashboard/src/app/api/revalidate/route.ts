@@ -1,5 +1,15 @@
+import { timingSafeEqual } from "crypto";
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+
+function safeCompare(a: string | null, b: string): boolean {
+  if (!a) return false;
+  try {
+    return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  } catch {
+    return false;
+  }
+}
 
 const PATHS_TO_REVALIDATE = [
   "/",
@@ -33,7 +43,7 @@ export async function POST(request: NextRequest) {
     // No body or invalid JSON — that's fine if header auth is present
   }
 
-  if (token !== secret && bodyToken !== secret) {
+  if (!safeCompare(token, secret) && !safeCompare(bodyToken, secret)) {
     return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
   }
 

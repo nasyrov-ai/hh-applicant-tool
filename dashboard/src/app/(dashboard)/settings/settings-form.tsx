@@ -124,12 +124,16 @@ export function SettingsForm({ initial }: SettingsFormProps) {
 
   function handleSave() {
     startSave(async () => {
-      const entries = Object.entries(values).map(([key, value]) => ({
-        key,
-        value,
-      }));
-      await saveSettings(entries);
-      toast.success("Настройки сохранены");
+      try {
+        const entries = Object.entries(values).map(([key, value]) => ({
+          key,
+          value,
+        }));
+        await saveSettings(entries);
+        toast.success("Настройки сохранены");
+      } catch {
+        toast.error("Ошибка сохранения настроек");
+      }
     });
   }
 

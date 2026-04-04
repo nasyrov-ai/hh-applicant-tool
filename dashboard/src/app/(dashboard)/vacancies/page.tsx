@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createStaticSupabase } from "@/lib/supabase-static";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -35,8 +35,8 @@ export default async function VacanciesPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const supabase = await createServerSupabase();
-  const page = Math.max(1, parseInt(params.page || "1", 10));
+  const supabase = createStaticSupabase();
+  const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
 
   let query = supabase
     .from("vacancies")

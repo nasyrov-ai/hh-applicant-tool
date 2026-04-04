@@ -10,11 +10,11 @@ export function formatNumber(n: number): string {
 }
 
 export function formatSalary(from?: number | null, to?: number | null, currency?: string | null): string {
-  if (!from && !to) return "—";
+  if (from == null && to == null) return "—";
   const c = currency || "RUR";
   const sym = c === "RUR" ? "₽" : c === "USD" ? "$" : c === "EUR" ? "€" : c;
-  if (from && to) return `${formatNumber(from)} – ${formatNumber(to)} ${sym}`;
-  if (from) return `от ${formatNumber(from)} ${sym}`;
+  if (from != null && to != null) return `${formatNumber(from)} – ${formatNumber(to)} ${sym}`;
+  if (from != null) return `от ${formatNumber(from)} ${sym}`;
   return `до ${formatNumber(to!)} ${sym}`;
 }
 
@@ -75,6 +75,10 @@ export function experienceLabel(exp: string | null | undefined): string {
     moreThan6: "6+ лет",
   };
   return map[exp] || exp;
+}
+
+export function isInvitation(state: string): boolean {
+  return state === "interview" || state.startsWith("invitation");
 }
 
 export function stateBadgeVariant(state: string): "success" | "destructive" | "default" | "warning" | "muted" {

@@ -16,7 +16,7 @@ export default function DashboardLayout({
       <Sidebar />
       <MobileHeader />
       <main className="min-h-screen p-4 md:ml-56 md:p-6 bg-grid overflow-hidden">
-        <div className="glow-gold glow-pulse" style={{ top: "-200px", right: "-100px", opacity: 0.5 }} />
+        <div className="glow-gold glow-pulse" aria-hidden="true" style={{ top: "-200px", right: "-100px", opacity: 0.5 }} />
         <div className="relative z-10">
           {children}
         </div>

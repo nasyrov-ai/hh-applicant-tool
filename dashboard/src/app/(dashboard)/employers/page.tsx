@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createStaticSupabase } from "@/lib/supabase-static";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { Pagination } from "@/components/pagination";
@@ -22,14 +22,16 @@ export default async function EmployersPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const supabase = await createServerSupabase();
-  const page = Math.max(1, parseInt(params.page || "1", 10));
+  const supabase = createStaticSupabase();
+  const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
 
-  const { data: employers, count, error } = await supabase
+  const employersQuery = supabase
     .from("employers")
     .select("id, name, type, area_name, site_url, alternate_url, updated_at", { count: "exact" })
     .order("updated_at", { ascending: false })
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+
+  const { data: employers, count, error } = await employersQuery;
 
   if (error) {
     return (
@@ -46,7 +48,7 @@ export default async function EmployersPage({
     );
   }
 
-  // Получаем информацию о сайтах
+  // Fetch employer sites in parallel (can't run with employers query due to needing IDs)
   const employerIds = (employers || []).map((e: Employer) => e.id);
   const { data: sites } = employerIds.length > 0
     ? await supabase

@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createStaticSupabase } from "@/lib/supabase-static";
 import { PageHeader } from "@/components/page-header";
 import { SettingsForm } from "./settings-form";
 
@@ -6,7 +6,7 @@ export const metadata = { title: "Настройки — 1.618 worksearch" };
 export const revalidate = 30;
 
 export default async function SettingsPage() {
-  const supabase = await createServerSupabase();
+  const supabase = createStaticSupabase();
   const { data, error } = await supabase.from("worker_config").select("key, value");
 
   if (error) {

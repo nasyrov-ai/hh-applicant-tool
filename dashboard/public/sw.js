@@ -1,7 +1,11 @@
-const CACHE_NAME = "hh-dash-v1";
+const CACHE_NAME = "hh-dash-v2";
+const SUPABASE_CACHE_MAX_ENTRIES = 50;
 
 // Cache-first for static assets
 const STATIC_PATTERN = /\/_next\/static\//;
+
+// Network-first for Supabase REST API
+const SUPABASE_PATTERN = /\.supabase\.co\/rest\/v1\//;
 
 self.addEventListener("install", () => {
   self.skipWaiting();
@@ -38,6 +42,37 @@ self.addEventListener("fetch", (event) => {
             return response;
           })
       )
+    );
+    return;
+  }
+
+  // Network-first for Supabase API responses (fallback to cache when offline)
+  if (SUPABASE_PATTERN.test(request.url)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, clone);
+              // Limit cache size
+              cache.keys().then((keys) => {
+                const supabaseKeys = keys.filter((k) => SUPABASE_PATTERN.test(k.url));
+                if (supabaseKeys.length > SUPABASE_CACHE_MAX_ENTRIES) {
+                  supabaseKeys
+                    .slice(0, supabaseKeys.length - SUPABASE_CACHE_MAX_ENTRIES)
+                    .forEach((k) => cache.delete(k));
+                }
+              });
+            });
+          }
+          return response;
+        })
+        .catch(() =>
+          caches
+            .open(CACHE_NAME)
+            .then((cache) => cache.match(request, { ignoreVary: true }))
+        )
     );
     return;
   }

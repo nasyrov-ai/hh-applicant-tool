@@ -7,19 +7,25 @@ import { assertAuth } from "@/lib/auth";
 
 const employerIdSchema = z.number().int().positive();
 
+const addSchema = z.object({
+  employerId: z.number().int().positive(),
+  employerName: z.string().min(1).max(500),
+  reason: z.string().max(1000).default(""),
+});
+
 export async function addToBlacklist(
   employerId: number,
   employerName: string,
   reason: string
 ) {
-  employerIdSchema.parse(employerId);
+  const validated = addSchema.parse({ employerId, employerName, reason });
   await assertAuth();
   const supabase = await createServerSupabase();
 
   const { error } = await supabase.from("blacklist").upsert({
-    employer_id: employerId,
-    employer_name: employerName,
-    reason: reason || null,
+    employer_id: validated.employerId,
+    employer_name: validated.employerName,
+    reason: validated.reason || null,
   });
 
   if (error) throw new Error(error.message);

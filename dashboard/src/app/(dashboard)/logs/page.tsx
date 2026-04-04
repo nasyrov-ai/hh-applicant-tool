@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createStaticSupabase } from "@/lib/supabase-static";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,7 @@ export const metadata = { title: "Логи — 1.618 worksearch" };
 export const revalidate = 60;
 
 export default async function LogsPage() {
-  const supabase = await createServerSupabase();
+  const supabase = createStaticSupabase();
 
   const { data: commands, error } = await supabase
     .from("command_queue")

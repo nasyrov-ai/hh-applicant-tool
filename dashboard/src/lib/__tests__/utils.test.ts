@@ -10,6 +10,7 @@ import {
   experienceLabel,
   commandStatusVariant,
   commandStatusLabel,
+  isInvitation,
 } from "../utils";
 
 describe("formatNumber", () => {
@@ -183,5 +184,35 @@ describe("commandStatusLabel", () => {
 
   it("returns raw status for unknown statuses", () => {
     expect(commandStatusLabel("xyz")).toBe("xyz");
+  });
+});
+
+describe("isInvitation", () => {
+  it("returns true for interview state", () => {
+    expect(isInvitation("interview")).toBe(true);
+  });
+
+  it("returns true for invitation prefix", () => {
+    expect(isInvitation("invitation_accepted")).toBe(true);
+  });
+
+  it("returns true for plain invitation", () => {
+    expect(isInvitation("invitation")).toBe(true);
+  });
+
+  it("returns false for discard", () => {
+    expect(isInvitation("discard")).toBe(false);
+  });
+
+  it("returns false for response", () => {
+    expect(isInvitation("response")).toBe(false);
+  });
+
+  it("returns false for active", () => {
+    expect(isInvitation("active")).toBe(false);
+  });
+
+  it("returns false for empty string", () => {
+    expect(isInvitation("")).toBe(false);
   });
 });

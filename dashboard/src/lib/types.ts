@@ -92,3 +92,29 @@ export interface EmployerSearchResult {
   name: string;
   alternate_url: string | null;
 }
+
+export interface ApplicationMessage {
+  id: string;
+  negotiation_id: number | null;
+  vacancy_id: number;
+  resume_id: string;
+  employer_id: number | null;
+  message_text: string;
+  message_type: "template" | "ai" | "custom";
+  ai_model: string | null;
+  created_at: string;
+}
+
+export interface FunnelStep {
+  label: string;
+  count: number;
+  percentage: number;
+}
+
+export interface AnalyticsBreakdown {
+  label: string;
+  total: number;
+  invitations: number;
+  discards: number;
+  conversionRate: number;
+}

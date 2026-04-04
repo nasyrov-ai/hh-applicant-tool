@@ -1,12 +1,13 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createStaticSupabase } from "@/lib/supabase-static";
 import { PageHeader } from "@/components/page-header";
+import { SchedulePresets } from "./schedule-presets";
 import { SchedulesList } from "./schedules-list";
 
 export const metadata = { title: "Расписание — 1.618 worksearch" };
 export const revalidate = 30;
 
 export default async function SchedulesPage() {
-  const supabase = await createServerSupabase();
+  const supabase = createStaticSupabase();
 
   const { data: schedules, error } = await supabase
     .from("cron_schedules")
@@ -30,6 +31,7 @@ export default async function SchedulesPage() {
         title="Расписание"
         description={`${schedules?.length || 0} задач`}
       />
+      <SchedulePresets />
       <SchedulesList schedules={schedules || []} />
     </div>
   );
