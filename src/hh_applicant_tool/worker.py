@@ -43,6 +43,7 @@ ALLOWED_COMMANDS = {
     "refresh-token",
     "test-session",
     "whoami",
+    "hot-vacancies",
 }
 
 POLL_INTERVAL = 3.0  # seconds (base; increases with backoff when idle)
@@ -104,6 +105,7 @@ class WorkerDaemon:
         signal.signal(signal.SIGINT, self._handle_signal)
 
         self._cancellation_event: threading.Event | None = None
+        self._command_started_at: datetime | None = None
         self._current_command_id: str | None = None
         self._current_cmd_thread: threading.Thread | None = None
         self._heartbeat_stop = threading.Event()
@@ -162,11 +164,21 @@ class WorkerDaemon:
                 try:
                     # Zombie thread protection: skip cycle if previous command thread is still alive
                     if self._current_cmd_thread is not None and self._current_cmd_thread.is_alive():
-                        logger.warning(
-                            "Previous command thread still alive, skipping poll cycle"
-                        )
-                        time.sleep(current_interval)
-                        continue
+                        # Check how long the zombie thread has been running
+                        zombie_age = (datetime.now(timezone.utc) - getattr(self, "_command_started_at", datetime.now(timezone.utc))).total_seconds()
+                        if zombie_age > MAX_EXECUTION_TIME + 30:
+                            logger.error(
+                                "Zombie thread exceeded timeout (%ds), abandoning it",
+                                int(zombie_age),
+                            )
+                            self._current_cmd_thread = None
+                        else:
+                            logger.warning(
+                                "Previous command thread still alive (%.0fs), skipping poll cycle",
+                                zombie_age,
+                            )
+                            time.sleep(current_interval)
+                            continue
 
                     command = self._poll_command()
                     if command:
@@ -370,17 +382,51 @@ class WorkerDaemon:
                 status = "completed" if exit_code == 0 else "failed"
 
             completed_at = datetime.now(timezone.utc)
-            try:
-                self.supabase.table("command_queue").update(
-                    {
-                        "status": status,
-                        "exit_code": exit_code,
-                        "error_message": error_message,
-                        "completed_at": completed_at.isoformat(),
-                    }
-                ).eq("id", cmd_id).execute()
-            except Exception as ex:
-                logger.error("Failed to update command status: %s", ex)
+
+            # Auto-retry logic for failed commands
+            should_retry = False
+            if status == "failed":
+                retry_count = command.get("retry_count", 0) or 0
+                max_retries = command.get("max_retries", 0) or 0
+                if not max_retries:
+                    max_retries = int(
+                        self._get_config("default_max_retries", "0")
+                    )
+                if retry_count < max_retries:
+                    should_retry = True
+                    logger.info(
+                        "Command %s failed, scheduling retry %d/%d",
+                        cmd_id,
+                        retry_count + 1,
+                        max_retries,
+                    )
+
+            if should_retry:
+                try:
+                    self.supabase.table("command_queue").update(
+                        {
+                            "status": "pending",
+                            "exit_code": exit_code,
+                            "error_message": error_message,
+                            "retry_count": retry_count + 1,
+                            "completed_at": None,
+                            "started_at": None,
+                        }
+                    ).eq("id", cmd_id).execute()
+                except Exception as ex:
+                    logger.error("Failed to schedule retry: %s", ex)
+            else:
+                try:
+                    self.supabase.table("command_queue").update(
+                        {
+                            "status": status,
+                            "exit_code": exit_code,
+                            "error_message": error_message,
+                            "completed_at": completed_at.isoformat(),
+                        }
+                    ).eq("id", cmd_id).execute()
+                except Exception as ex:
+                    logger.error("Failed to update command status: %s", ex)
 
             # Telegram notification
             from .utils.telegram import notify_command_completed, notify_command_failed
@@ -388,7 +434,7 @@ class WorkerDaemon:
             duration = int((completed_at - started_at).total_seconds()) if started_at else None
             if status == "completed":
                 notify_command_completed(cmd_name, duration)
-            elif status == "failed":
+            elif status == "failed" and not should_retry:
                 notify_command_failed(cmd_name, error_message or "")
 
             # Auto-sync after every operation (except sync-db itself)
@@ -450,6 +496,23 @@ class WorkerDaemon:
             ).eq("id", cmd_id).execute()
         except Exception as ex:
             logger.error("Failed to mark command as failed: %s", ex)
+
+    def _get_config(self, key: str, default: str = "") -> str:
+        """Read a single config value from worker_config table."""
+        try:
+            res = (
+                self.supabase.table("worker_config")
+                .select("value")
+                .eq("key", key)
+                .limit(1)
+                .execute()
+            )
+            if res.data:
+                val = res.data[0].get("value")
+                return str(val) if val is not None else default
+        except Exception:
+            pass
+        return default
 
     def _send_heartbeat(self, status: str) -> None:
         """Update worker_status table."""

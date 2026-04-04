@@ -49,7 +49,5 @@ class Config(dict):
                     sort_keys=True,
                 )
 
-    __getitem__ = dict.get
-
     def __repr__(self) -> str:
         return str(self._config_path)

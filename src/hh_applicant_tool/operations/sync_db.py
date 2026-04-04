@@ -25,6 +25,8 @@ SYNC_TABLES = [
     "negotiations",
     "vacancy_contacts",
     "employer_sites",
+    "application_messages",
+    "employer_watchlist",
 ]
 
 # Столбцы, хранящие JSON в SQLite (TEXT), но ожидаемые как JSONB в Supabase
@@ -201,6 +203,7 @@ class Operation(BaseOperation):
         This avoids going through model.to_db() which can strip fields
         like updated_at or created_at that the model doesn't declare.
         """
+        assert table_name in SYNC_TABLES, f"Invalid table: {table_name}"
         if since:
             sql = (
                 f"SELECT * FROM {table_name} "
@@ -247,7 +250,7 @@ class Operation(BaseOperation):
                     v = v + "+00:00"
 
                 # BUG 1 fix: convert hex IDs to UUID format for vacancy_contacts
-                if table_name == "vacancy_contacts" and k == "id":
+                if table_name in ("vacancy_contacts", "application_messages") and k == "id":
                     v = self._hex_to_uuid(v)
 
                 # Send all fields including None -- removing None prevents

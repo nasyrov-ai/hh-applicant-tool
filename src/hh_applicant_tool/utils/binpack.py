@@ -64,11 +64,7 @@ DECOMPRESSORS: dict[int, Callable[[bytes], bytes]] = {
 
 
 def get_best_algo() -> int:
-    if zlib:
-        return COMP_ZLIB
-    if gzip:
-        return COMP_GZIP
-    return COMP_NONE
+    return COMP_ZLIB
 
 
 # ---- Serialization (Recursive Functions) ----

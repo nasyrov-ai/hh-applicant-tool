@@ -145,10 +145,11 @@ class ErrorReporter:
     def _process_reporting(self):
         # Получаем timestamp последнего репорта
         last_report = datetime.fromtimestamp(
-            self.storage.settings.get_value("_last_report", 0)
+            self.storage.settings.get_value("_last_report", 0),
+            tz=timezone.utc,
         )
 
-        if datetime.now() >= last_report + timedelta(hours=72):
+        if datetime.now(timezone.utc) >= last_report + timedelta(hours=72):
             try:
                 report_dict = self.__build_report(last_report)
                 has_data = any(

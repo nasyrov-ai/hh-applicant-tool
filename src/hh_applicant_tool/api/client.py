@@ -68,6 +68,31 @@ class BaseClient:
             "X-HH-App-Active": "true",
         }
 
+    def _single_request(
+        self,
+        method: str,
+        url: str,
+        payload: dict,
+        headers: dict,
+        delay: float | None = None,
+    ) -> requests.Response:
+        """Rate-limited single request attempt. Acquires lock."""
+        with self.lock:
+            effective_delay = self.delay if delay is None else delay
+            wait_time = (
+                effective_delay
+                - time.monotonic()
+                + self._previous_request_time
+            )
+            if wait_time > 0:
+                logger.debug("wait %fs before request", wait_time)
+                time.sleep(wait_time)
+            response = self.session.request(
+                method, url, **payload, headers=headers, allow_redirects=False
+            )
+            self._previous_request_time = time.monotonic()
+            return response
+
     def request(
         self,
         method: AllowedMethods,
@@ -82,56 +107,79 @@ class BaseClient:
         params = dict(params or {})
         params.update(kwargs)
         url = self.resolve_url(endpoint)
-        with self.lock:
-            # На серваке какая-то анти-DDOS система
-            effective_delay = self.delay if delay is None else delay
-            wait_time = (
-                effective_delay
-                - time.monotonic()
-                + self._previous_request_time
-            )
-            if wait_time > 0:
-                logger.debug("wait %fs before request", wait_time)
-                time.sleep(wait_time)
-            has_body = method in ["POST", "PUT"]
-            payload = {
-                ["data", "json"][as_json] if has_body else "params": params
-            }
-            # logger.debug(f"request info: {method = }, {url = }, {headers = }, params = {repr(params)[:255]}")
-            response = self.session.request(
+        has_body = method in ["POST", "PUT"]
+        payload = {
+            ["data", "json"][as_json] if has_body else "params": params
+        }
+        # logger.debug(f"request info: {method = }, {url = }, {headers = }, params = {repr(params)[:255]}")
+        response = self._request_with_retry(
+            method, url, payload, self._default_headers(), delay
+        )
+        try:
+            # У этих лошков сервер не отдает Content-Length, а кривое API
+            # отдает пустые ответы, например, при отклике на вакансии,
+            # и мы не можем узнать содержит ли ответ тело
+            # 'Server': 'ddos-guard'
+            # ...
+            # 'Transfer-Encoding': 'chunked'
+            try:
+                rv = response.json() if response.content else {}
+            except json.JSONDecodeError as ex:
+                raise errors.BadResponse(
+                    f"Can't decode JSON: {method} {url} ({response.status_code})"
+                ) from ex
+        finally:
+            logger.debug(
+                "%d %s %s with params: %.1000s",
+                response.status_code,
                 method,
                 url,
-                **payload,
-                headers=self._default_headers(),
-                allow_redirects=False,
+                params or "-",
             )
-            try:
-                # У этих лошков сервер не отдает Content-Length, а кривое API
-                # отдает пустые ответы, например, при отклике на вакансии,
-                # и мы не можем узнать содержит ли ответ тело
-                # 'Server': 'ddos-guard'
-                # ...
-                # 'Transfer-Encoding': 'chunked'
-                try:
-                    rv = response.json() if response.content else {}
-                except json.JSONDecodeError as ex:
-                    raise errors.BadResponse(
-                        f"Can't decode JSON: {method} {url} ({response.status_code})"
-                    ) from ex
-            finally:
-                logger.debug(
-                    "%d %s %s with params: %.1000s",
-                    response.status_code,
-                    method,
-                    url,
-                    params or "-",
-                )
-                self._previous_request_time = time.monotonic()
         errors.ApiError.raise_for_status(response, rv)
         assert 300 > response.status_code >= 200, (
             f"Unexpected status code for {method} {url}: {response.status_code}"
         )
         return rv
+
+    _RETRY_STATUSES = {429, 502, 503}
+    _MAX_RETRIES = 3
+    _RETRY_BASE_DELAY = 2.0  # seconds
+
+    def _request_with_retry(
+        self,
+        method: str,
+        url: str,
+        payload: dict,
+        headers: dict,
+        delay: float | None = None,
+    ) -> requests.Response:
+        for attempt in range(self._MAX_RETRIES + 1):
+            response = self._single_request(
+                method, url, payload, headers, delay
+            )
+            if response.status_code not in self._RETRY_STATUSES:
+                return response
+            if attempt < self._MAX_RETRIES:
+                wait = self._RETRY_BASE_DELAY * (2 ** attempt)
+                logger.warning(
+                    "HTTP %d from %s %s, retrying in %.1fs (attempt %d/%d)",
+                    response.status_code,
+                    method,
+                    url,
+                    wait,
+                    attempt + 1,
+                    self._MAX_RETRIES,
+                )
+                time.sleep(wait)
+            else:
+                logger.warning(
+                    "HTTP %d from %s %s, no more retries",
+                    response.status_code,
+                    method,
+                    url,
+                )
+        return response
 
     def get(self, *args, **kwargs) -> T:
         return self.request("GET", *args, **kwargs)

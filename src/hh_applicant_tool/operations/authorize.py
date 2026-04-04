@@ -207,9 +207,7 @@ class Operation(BaseOperation):
                     await page.fill(self.SEL_LOGIN_INPUT, username)
                     logger.debug("Логин введен")
 
-                    password = args.password or storage.settings.get_value(
-                        "auth.password"
-                    )
+                    password = args.password
                     if password:
                         await self._direct_login(page, password)
                     else:
@@ -232,10 +230,6 @@ class Operation(BaseOperation):
 
                 if self.is_automated:
                     storage.settings.set_value("auth.username", username)
-                    if args.password:
-                        storage.settings.set_value(
-                            "auth.password", args.password
-                        )
 
                 storage.settings.set_value("auth.last_login", datetime.now())
                 cookies = await context.cookies()

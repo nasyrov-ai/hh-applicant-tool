@@ -57,7 +57,7 @@ def strip_tags(content: str) -> str:
 
 # Паттерны бреда, который AI не должен отправлять работодателю
 _GARBAGE_PATTERNS = re.compile(
-    r"Рустам,?\s*(эта вакансия|эту вакансию|тебе|твоём? опыт)"
+    r"[А-ЯЁ][а-яё]+,?\s*(эта вакансия|эту вакансию|тебе|твоём? опыт)"
     r"|не подходит под тво[йи]"
     r"|не соответствует тво"
     r"|в твоём опыте нет"
@@ -94,7 +94,7 @@ _GARBAGE_PATTERNS = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 
-# Ложь про знание языков программирования — Рустам НЕ программист
+# TODO: make configurable via settings (currently hardcoded for non-programmer profile)
 _FAKE_SKILLS_PATTERNS = re.compile(
     r"(опыт|владею|знаю|пишу|работаю|разрабатыва).{0,20}"
     r"(Python|Java|C\+\+|C#|Go|Rust|Ruby|PHP|Kotlin|Swift|TypeScript|JavaScript|React|Vue|Angular|Django|FastAPI|Flask|Spring|Laravel|Rails)"

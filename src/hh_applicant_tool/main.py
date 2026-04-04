@@ -163,10 +163,11 @@ class HHApplicantTool(MegaTool):
 
     @cached_property
     def session(self) -> requests.Session:
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
         session = requests.Session()
-        session.verify = False
+
+        if os.environ.get("HH_SKIP_TLS_VERIFY"):
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            session.verify = False
 
         if proxies := self._get_proxies():
             logger.info("Use proxies for requests: %r", proxies)
@@ -209,6 +210,7 @@ class HHApplicantTool(MegaTool):
     @cached_property
     def db(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA journal_mode=WAL")
         return conn
 
     @cached_property

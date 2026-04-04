@@ -286,6 +286,7 @@ class TestAllowedCommands(unittest.TestCase):
             "refresh-token",
             "test-session",
             "whoami",
+            "hot-vacancies",
         }
         self.assertEqual(ALLOWED_COMMANDS, expected)
 

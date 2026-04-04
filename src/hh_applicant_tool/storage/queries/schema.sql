@@ -92,6 +92,8 @@ CREATE TABLE IF NOT EXISTS resumes (
 CREATE INDEX IF NOT EXISTS idx_vac_upd ON vacancies(updated_at);
 CREATE INDEX IF NOT EXISTS idx_emp_upd ON employers(updated_at);
 CREATE INDEX IF NOT EXISTS idx_neg_upd ON negotiations(updated_at);
+CREATE INDEX IF NOT EXISTS idx_neg_vacancy ON negotiations(vacancy_id);
+CREATE INDEX IF NOT EXISTS idx_neg_resume ON negotiations(resume_id);
 /* ===================== ТРИГГЕРЫ (Всегда обновляют дату) ===================== */
 -- Убрал условие WHEN. Теперь при любом UPDATE дата актуализируется принудительно.
 CREATE TRIGGER IF NOT EXISTS trg_resumes_updated
@@ -158,5 +160,38 @@ BEGIN
     UPDATE employer_sites
     SET updated_at = CURRENT_TIMESTAMP
     WHERE id = OLD.id;
+END;
+/* ===================== application_messages ===================== */
+CREATE TABLE IF NOT EXISTS application_messages (
+    id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+    negotiation_id INTEGER,
+    vacancy_id INTEGER NOT NULL,
+    resume_id TEXT NOT NULL,
+    employer_id INTEGER,
+    message_text TEXT NOT NULL,
+    message_type TEXT NOT NULL DEFAULT 'template',
+    ai_model TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_app_msg_vac ON application_messages(vacancy_id);
+CREATE INDEX IF NOT EXISTS idx_app_msg_resume ON application_messages(resume_id);
+/* ===================== employer_watchlist ===================== */
+CREATE TABLE IF NOT EXISTS employer_watchlist (
+    employer_id INTEGER PRIMARY KEY,
+    employer_name TEXT NOT NULL,
+    notify BOOLEAN DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_emp_wl_upd ON employer_watchlist(updated_at);
+
+CREATE TRIGGER IF NOT EXISTS trg_employer_watchlist_updated
+AFTER UPDATE ON employer_watchlist
+BEGIN
+    UPDATE employer_watchlist
+    SET updated_at = CURRENT_TIMESTAMP
+    WHERE employer_id = OLD.employer_id;
 END;
 COMMIT;
