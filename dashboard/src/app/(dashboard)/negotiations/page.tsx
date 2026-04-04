@@ -103,16 +103,7 @@ export default async function NegotiationsPage({
       <div className="flex items-center justify-between gap-4">
         <NegotiationsFilter currentState={stateFilter} currentSearch={search} />
         <div className="flex items-center gap-2">
-          <ExportButton
-            data={(negotiations || []).map((n: Negotiation) => ({
-              id: n.id,
-              state: n.state,
-              vacancy_id: n.vacancy_id,
-              employer_id: n.employer_id,
-              created_at: n.created_at,
-              updated_at: n.updated_at,
-            }))}
-          />
+          <ExportButton />
           <ViewToggle current={view} />
         </div>
       </div>

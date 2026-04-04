@@ -1,4 +1,17 @@
+const MAX_ENTRIES = 10_000;
+const CLEANUP_INTERVAL_MS = 60_000;
+
 const hits = new Map<string, { count: number; resetAt: number }>();
+let lastCleanup = Date.now();
+
+function cleanup(now: number) {
+  for (const [key, entry] of hits) {
+    if (now > entry.resetAt) {
+      hits.delete(key);
+    }
+  }
+  lastCleanup = now;
+}
 
 export function rateLimit(
   key: string,
@@ -6,6 +19,12 @@ export function rateLimit(
   windowMs: number,
 ): { allowed: boolean; remaining: number } {
   const now = Date.now();
+
+  // Periodic cleanup of expired entries to prevent memory leaks
+  if (now - lastCleanup > CLEANUP_INTERVAL_MS || hits.size > MAX_ENTRIES) {
+    cleanup(now);
+  }
+
   const entry = hits.get(key);
 
   if (!entry || now > entry.resetAt) {
