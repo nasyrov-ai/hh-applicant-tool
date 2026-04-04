@@ -155,6 +155,8 @@ CREATE TABLE IF NOT EXISTS command_queue (
     worker_id TEXT,
     exit_code INTEGER,
     error_message TEXT,
+    retry_count INTEGER DEFAULT 0,
+    max_retries INTEGER DEFAULT 0,
     started_at TIMESTAMPTZ,
     completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT now()
@@ -222,6 +224,38 @@ CREATE TABLE IF NOT EXISTS blacklist (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- ---------------------------------------------------------------------------
+-- application_messages (cover letters sent with applications)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS application_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    negotiation_id BIGINT,
+    vacancy_id BIGINT NOT NULL,
+    resume_id TEXT NOT NULL,
+    employer_id BIGINT,
+    message_text TEXT NOT NULL,
+    message_type TEXT NOT NULL DEFAULT 'template',
+    ai_model TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_app_msg_vacancy
+    ON application_messages(vacancy_id);
+CREATE INDEX IF NOT EXISTS idx_app_msg_resume
+    ON application_messages(resume_id);
+CREATE INDEX IF NOT EXISTS idx_app_msg_created
+    ON application_messages(created_at);
+
+-- ---------------------------------------------------------------------------
+-- employer_watchlist (tracked employers for notifications)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS employer_watchlist (
+    employer_id BIGINT PRIMARY KEY,
+    employer_name TEXT NOT NULL,
+    notify BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- 3. INDEXES ON updated_at (for data tables)
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -263,21 +297,37 @@ ALTER TABLE execution_logs     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE worker_config      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE worker_status      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cron_schedules     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE blacklist          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE blacklist               ENABLE ROW LEVEL SECURITY;
+ALTER TABLE application_messages    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE employer_watchlist      ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow all for anon" ON employers          FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON vacancies          FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON vacancy_contacts   FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON negotiations       FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON resumes            FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON employer_sites     FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON sync_log           FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON command_queue      FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON execution_logs     FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON worker_config      FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON worker_status      FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON cron_schedules     FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for anon" ON blacklist          FOR ALL TO anon USING (true) WITH CHECK (true);
+-- Read-only tables: anon can SELECT but not modify
+CREATE POLICY "anon_read" ON employers          FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read" ON vacancies          FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read" ON vacancy_contacts   FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read" ON negotiations       FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read" ON resumes            FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read" ON employer_sites     FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read" ON application_messages FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read" ON employer_watchlist  FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read" ON blacklist           FOR SELECT TO anon USING (true);
+
+-- Worker-managed tables: only service_role can write, anon can read
+CREATE POLICY "anon_read" ON sync_log           FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read" ON execution_logs     FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read" ON worker_status      FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read" ON worker_config      FOR SELECT TO anon USING (true);
+
+-- Command/schedule tables: anon can read and insert/update (dashboard actions)
+CREATE POLICY "anon_read"  ON command_queue     FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_write" ON command_queue     FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "anon_update" ON command_queue    FOR UPDATE TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon_read"  ON cron_schedules   FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_write" ON cron_schedules   FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "anon_update" ON cron_schedules  FOR UPDATE TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon_delete" ON cron_schedules  FOR DELETE TO anon USING (true);
+
+-- service_role bypasses RLS, so worker writes work without extra policies
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- 5. REALTIME

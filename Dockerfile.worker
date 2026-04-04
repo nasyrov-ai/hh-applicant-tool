@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Копируем файлы пакета
 COPY src /app/src
-COPY pyproject.toml README.md /app/
+COPY pyproject.toml poetry.lock* README.md /app/
 
 # Ставим с worker extras (supabase + croniter)
 RUN pip install --no-cache-dir -e '.[worker]'

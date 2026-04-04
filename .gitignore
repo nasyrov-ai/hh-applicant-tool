@@ -123,3 +123,9 @@ dashboard/.vercel/
 REPORT_AI_DETECTION.md
 excuse-generator-*.png
 letter.txt
+
+# OS
+.DS_Store
+
+# Claude Code
+.claude/
