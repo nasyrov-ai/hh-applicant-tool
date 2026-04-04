@@ -30,6 +30,8 @@ import time
 from datetime import datetime, timezone
 from typing import Any
 
+from .utils.mixins import get_package_version
+
 logger = logging.getLogger("hh_applicant_tool.worker")
 
 # Commands that are safe to execute remotely
@@ -522,7 +524,7 @@ class WorkerDaemon:
                     "worker_id": self._worker_id,
                     "status": status,
                     "last_seen_at": datetime.now(timezone.utc).isoformat(),
-                    "version": "1.0.0",
+                    "version": get_package_version() or "dev",
                     "hostname": platform.node(),
                 }
             ).execute()

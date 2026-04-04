@@ -22,10 +22,11 @@ from .client_keys import (
 )
 from .datatypes import AccessToken
 
-__all__ = ("ApiClient", "OAuthClient")
+__all__ = ("ApiClient", "HH_BASE_URL", "OAuthClient")
 
 HH_API_URL = "https://api.hh.ru/"
 HH_OAUTH_URL = "https://hh.ru/oauth/"
+HH_BASE_URL = "https://hh.ru"
 DEFAULT_DELAY = 0.345
 
 AllowedMethods = Literal["GET", "POST", "PUT", "DELETE"]

@@ -14,6 +14,7 @@ try:
 except ImportError:
     pass
 
+from ..api.client import HH_BASE_URL
 from ..main import BaseOperation
 from ..utils.terminal import print_kitty_image, print_sixel_mage
 
@@ -162,13 +163,13 @@ class Operation(BaseOperation):
                     # For manual mode: go to applicant login, then OAuth
                     # Step 1: Log out from any existing session
                     await page.goto(
-                        "https://hh.ru/account/logout",
+                        f"{HH_BASE_URL}/account/logout",
                         timeout=60000,
                         wait_until="domcontentloaded",
                     )
                     # Step 2: Go to applicant login page
                     await page.goto(
-                        "https://hh.ru/account/login?backurl=/&role=applicant",
+                        f"{HH_BASE_URL}/account/login?backurl=/&role=applicant",
                         timeout=60000,
                         wait_until="domcontentloaded",
                     )

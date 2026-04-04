@@ -21,6 +21,21 @@ def is_configured() -> bool:
     return bool(_BOT_TOKEN and _CHAT_ID)
 
 
+def _build_payload(
+    text: str, parse_mode: str = "HTML", reply_markup: dict | None = None
+) -> dict:
+    """Build the JSON payload for Telegram sendMessage API."""
+    payload: dict[str, Any] = {
+        "chat_id": _CHAT_ID,
+        "text": text[:4096],
+        "parse_mode": parse_mode,
+        "disable_web_page_preview": True,
+    }
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
+    return payload
+
+
 def _send(text: str, parse_mode: str = "HTML") -> None:
     """Send message in background thread (non-blocking)."""
     if not is_configured():
@@ -30,12 +45,7 @@ def _send(text: str, parse_mode: str = "HTML") -> None:
         try:
             requests.post(
                 f"https://api.telegram.org/bot{_BOT_TOKEN}/sendMessage",
-                json={
-                    "chat_id": _CHAT_ID,
-                    "text": text[:4096],
-                    "parse_mode": parse_mode,
-                    "disable_web_page_preview": True,
-                },
+                json=_build_payload(text, parse_mode),
                 timeout=10,
             )
         except Exception as ex:
@@ -51,12 +61,7 @@ def _send_sync(text: str, parse_mode: str = "HTML") -> int | None:
     try:
         resp = requests.post(
             f"https://api.telegram.org/bot{_BOT_TOKEN}/sendMessage",
-            json={
-                "chat_id": _CHAT_ID,
-                "text": text[:4096],
-                "parse_mode": parse_mode,
-                "disable_web_page_preview": True,
-            },
+            json=_build_payload(text, parse_mode),
             timeout=10,
         )
         data = resp.json()
@@ -76,13 +81,7 @@ def _send_with_buttons(
     try:
         resp = requests.post(
             f"https://api.telegram.org/bot{_BOT_TOKEN}/sendMessage",
-            json={
-                "chat_id": _CHAT_ID,
-                "text": text[:4096],
-                "parse_mode": parse_mode,
-                "disable_web_page_preview": True,
-                "reply_markup": {"inline_keyboard": buttons},
-            },
+            json=_build_payload(text, parse_mode, reply_markup={"inline_keyboard": buttons}),
             timeout=10,
         )
         data = resp.json()

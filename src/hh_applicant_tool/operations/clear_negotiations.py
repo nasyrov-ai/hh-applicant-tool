@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import requests
 
+from ..api.client import HH_BASE_URL
 from ..api.errors import ApiError
 from ..main import BaseNamespace, BaseOperation
 from ..utils.date import parse_api_datetime
@@ -79,7 +80,7 @@ class Operation(BaseOperation):
             "X-Hhtmsource": "negotiation_list",
             "X-Requested-With": "XMLHttpRequest",
             "X-Xsrftoken": self.tool.xsrf_token,
-            "Referer": "https://hh.ru/applicant/negotiations?hhtmFrom=main&hhtmFromLabel=header",
+            "Referer": f"{HH_BASE_URL}/applicant/negotiations?hhtmFrom=main&hhtmFromLabel=header",
         }
 
         payload = {
@@ -90,7 +91,7 @@ class Operation(BaseOperation):
 
         try:
             r = self.tool.session.post(
-                "https://hh.ru/applicant/negotiations/trash",
+                f"{HH_BASE_URL}/applicant/negotiations/trash",
                 payload,
                 headers=headers,
             )

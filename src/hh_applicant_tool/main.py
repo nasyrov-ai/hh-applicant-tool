@@ -20,6 +20,7 @@ import requests
 import urllib3
 
 from . import ai, api, utils
+from .api.client import HH_BASE_URL
 from .storage import StorageFacade
 from .utils.cookiejar import HHOnlyCookieJar
 from .utils.log import setup_logger
@@ -340,7 +341,7 @@ class HHApplicantTool(MegaTool):
 
     def _get_xsrf_token(self, url: str | None = None) -> str:
         """Возвращает XSRF-токен, который выдается на сессию"""
-        r = self.session.get(url or "https://hh.ru/")
+        r = self.session.get(url or f"{HH_BASE_URL}/")
         return self._extract_xsrf_token(r.text)
 
     @cached_property
@@ -350,7 +351,7 @@ class HHApplicantTool(MegaTool):
     @property
     def is_logged_in(self) -> bool:
         """Проверяет авторизован ли пользователь через сайт."""
-        return self.session.get("https://hh.ru/settings", allow_redirects=False).status_code == 200
+        return self.session.get(f"{HH_BASE_URL}/settings", allow_redirects=False).status_code == 200
 
     def create_smtp(self) -> smtplib.SMTP | smtplib.SMTP_SSL:
         conf = self.config.get("smtp", {})

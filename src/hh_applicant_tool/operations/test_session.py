@@ -6,6 +6,7 @@ import logging
 import re
 from typing import TYPE_CHECKING
 
+from ..api.client import HH_BASE_URL
 from ..main import BaseNamespace, BaseOperation
 
 if TYPE_CHECKING:
@@ -29,7 +30,7 @@ class Operation(BaseOperation):
         ...
 
     def run(self, tool: HHApplicantTool) -> None:
-        r = tool.session.get("https://hh.ru")
+        r = tool.session.get(HH_BASE_URL)
 
         if m := re.search(r'^\s+login: "([^"]+)', r.text, re.MULTILINE):
             print("Вы вошли как", m.group(1))
