@@ -9,7 +9,6 @@ import {
   TrendingUp,
   Briefcase,
   Clock,
-  ExternalLink,
   Rocket,
 } from "lucide-react";
 

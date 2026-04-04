@@ -7,7 +7,7 @@ import { assertAuth } from "@/lib/auth";
 import { ALLOWED_COMMANDS } from "@/lib/commands";
 
 // Matches standard 5-field cron: minute hour dom month dow
-const cronRegex = /^(\*|[\d,\-\/]+)\s+(\*|[\d,\-\/]+)\s+(\*|[\d,\-\/]+)\s+(\*|[\d,\-\/]+)\s+(\*|[\d,\-\/]+)$/;
+const cronRegex = /^(\*|[\d,\-/]+)\s+(\*|[\d,\-/]+)\s+(\*|[\d,\-/]+)\s+(\*|[\d,\-/]+)\s+(\*|[\d,\-/]+)$/;
 
 // Schedule preset templates
 const SCHEDULE_PRESETS: Record<

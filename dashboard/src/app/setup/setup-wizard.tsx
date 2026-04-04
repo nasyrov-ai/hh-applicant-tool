@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -202,7 +203,7 @@ export function SetupWizard() {
                 <code className="text-sm">npm run dev</code>
               </div>
               <Button className="w-full" asChild>
-                <a href="/">Открыть дашборд</a>
+                <Link href="/">Открыть дашборд</Link>
               </Button>
             </>
           )}

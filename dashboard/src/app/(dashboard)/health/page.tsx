@@ -1,6 +1,6 @@
 import { createStaticSupabase } from "@/lib/supabase-static";
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime } from "@/lib/utils";
 import {
@@ -10,7 +10,6 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  AlertTriangle,
 } from "lucide-react";
 
 export const metadata = { title: "Здоровье — 1.618 worksearch" };
@@ -33,7 +32,8 @@ interface CommandRow {
 export default async function HealthPage() {
   const supabase = createStaticSupabase();
 
-  const dayAgo = new Date(Date.now() - 86_400_000).toISOString();
+  const now = Date.now(); // eslint-disable-line react-hooks/purity -- server component, not a hook
+  const dayAgo = new Date(now - 86_400_000).toISOString();
 
   const [workersRes, commandsRes, syncRes] = await Promise.all([
     supabase
@@ -90,7 +90,7 @@ export default async function HealthPage() {
         {workers.length > 0 ? (
           workers.map((w) => {
             const lastSeen = new Date(w.last_seen_at);
-            const stale = Date.now() - lastSeen.getTime() > 120_000;
+            const stale = now - lastSeen.getTime() > 120_000;
             const isOnline = !stale && w.status === "online";
 
             return (

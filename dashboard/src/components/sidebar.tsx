@@ -103,8 +103,10 @@ export function MobileHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
+  // Close mobile menu on navigation
   useEffect(() => {
-    setOpen(false);
+    const close = () => setOpen(false);
+    close();
   }, [pathname]);
 
   return (

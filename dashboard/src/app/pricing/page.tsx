@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,13 +62,13 @@ export default function PricingPage() {
   return (
     <div className="flex min-h-screen flex-col items-center bg-background px-6 py-12">
       <div className="mb-4">
-        <a
+        <Link
           href="/"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           В дашборд
-        </a>
+        </Link>
       </div>
 
       <h1 className="text-center text-3xl font-bold tracking-tight">

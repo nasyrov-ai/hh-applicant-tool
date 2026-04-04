@@ -33,7 +33,7 @@ export function CommandStatus({ commandId, onComplete }: CommandStatusProps) {
   const [status, setStatus] = useState<Status>("pending");
   const [error, setError] = useState<string | null>(null);
   const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
+  useEffect(() => { onCompleteRef.current = onComplete; });
 
   useEffect(() => {
     const supabase = createBrowserSupabase();

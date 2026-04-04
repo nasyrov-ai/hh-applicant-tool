@@ -55,17 +55,28 @@ export async function getAnalyticsData(period: Period): Promise<AnalyticsData> {
   const supabase = createStaticSupabase();
   const since = periodToDate(period);
 
-  // Fetch all negotiations for the period
-  let query = supabase
-    .from("negotiations")
-    .select("id, state, vacancy_id, employer_id, resume_id, created_at, updated_at");
+  // Fetch all negotiations for the period, paginated to bypass the default
+  // Supabase 1000-row limit. Fetches in chunks of 1000 rows.
+  const negs: NegotiationRow[] = [];
+  const PAGE = 1000;
+  let offset = 0;
 
-  if (since) {
-    query = query.gte("created_at", since);
+   
+  while (true) {
+    let q = supabase
+      .from("negotiations")
+      .select("id, state, vacancy_id, employer_id, resume_id, created_at, updated_at");
+
+    if (since) {
+      q = q.gte("created_at", since);
+    }
+
+    const { data } = await q.range(offset, offset + PAGE - 1);
+    const rows = (data ?? []) as NegotiationRow[];
+    negs.push(...rows);
+    if (rows.length < PAGE) break;
+    offset += PAGE;
   }
-
-  const { data: negotiations } = await query;
-  const negs: NegotiationRow[] = (negotiations ?? []) as NegotiationRow[];
 
   // Collect unique vacancy_ids and resume_ids for manual joins
   const vacancyIds = [...new Set(negs.map((n) => n.vacancy_id))];
@@ -83,15 +94,17 @@ export async function getAnalyticsData(period: Period): Promise<AnalyticsData> {
           .from("vacancies")
           .select("id, experience, salary_from, salary_to, remote")
           .in("id", vacancyIds.slice(0, 500))
+          .limit(500)
       : Promise.resolve({ data: [] }),
     resumeIds.length > 0
-      ? supabase.from("resumes").select("id, title").in("id", resumeIds)
+      ? supabase.from("resumes").select("id, title").in("id", resumeIds).limit(100)
       : Promise.resolve({ data: [] }),
     employerIds.length > 0
       ? supabase
           .from("employers")
           .select("id, name")
           .in("id", employerIds.slice(0, 200))
+          .limit(200)
       : Promise.resolve({ data: [] }),
   ]);
 

@@ -103,6 +103,42 @@ export const NegotiationsChart = memo(function NegotiationsChart({
   } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<SVGSVGElement>) => {
+      const svg = svgRef.current;
+      if (!svg || data.length === 0) return;
+
+      const maxCount = Math.max(...data.map((d) => d.count), 1);
+      const yTicks = computeNiceTicks(maxCount);
+      const yMax = yTicks[yTicks.length - 1];
+      const viewBoxW = 720;
+      const plotW = viewBoxW - PADDING.left - PADDING.right;
+      const plotH = CHART_HEIGHT - PADDING.top - PADDING.bottom;
+
+      const pts = data.map((d, i) => ({
+        x: PADDING.left + (i / (data.length - 1)) * plotW,
+        y: PADDING.top + plotH - (d.count / yMax) * plotH,
+      }));
+
+      const rect = svg.getBoundingClientRect();
+      const xRatio = (e.clientX - rect.left) / rect.width;
+      const xInViewBox = xRatio * viewBoxW;
+      let nearest = 0;
+      let minDist = Infinity;
+      for (let i = 0; i < pts.length; i++) {
+        const dist = Math.abs(pts[i].x - xInViewBox);
+        if (dist < minDist) {
+          minDist = dist;
+          nearest = i;
+        }
+      }
+      setTooltip({ x: pts[nearest].x, y: pts[nearest].y, idx: nearest });
+    },
+    [data],
+  );
+
+  const handleMouseLeave = useCallback(() => setTooltip(null), []);
+
   if (data.length === 0) {
     return (
       <Card>
@@ -119,54 +155,24 @@ export const NegotiationsChart = memo(function NegotiationsChart({
   const yTicks = computeNiceTicks(maxCount);
   const yMax = yTicks[yTicks.length - 1];
 
-  // Use a wide enough viewBox; the SVG will scale responsively
   const viewBoxWidth = 720;
   const plotW = viewBoxWidth - PADDING.left - PADDING.right;
   const plotH = CHART_HEIGHT - PADDING.top - PADDING.bottom;
 
-  // Map data to pixel coords within plot area
   const points = data.map((d, i) => ({
     x: PADDING.left + (i / (data.length - 1)) * plotW,
     y: PADDING.top + plotH - (d.count / yMax) * plotH,
   }));
 
   const linePath = buildSplinePath(points);
-  // Area path: line path + close along the bottom
   const areaPath = `${linePath}L${points[points.length - 1].x},${PADDING.top + plotH}L${points[0].x},${PADDING.top + plotH}Z`;
 
-  // Show every Nth label to avoid clutter
   const labelEvery = data.length <= 15 ? 1 : Math.ceil(data.length / 10);
 
-  // Grid lines for Y
   const gridLines = yTicks.map((v) => ({
     y: PADDING.top + plotH - (v / yMax) * plotH,
     label: String(v),
   }));
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
-      const svg = svgRef.current;
-      if (!svg) return;
-      const rect = svg.getBoundingClientRect();
-      const xRatio = (e.clientX - rect.left) / rect.width;
-      const xInViewBox = xRatio * viewBoxWidth;
-      // Find nearest data point
-      let nearest = 0;
-      let minDist = Infinity;
-      for (let i = 0; i < points.length; i++) {
-        const dist = Math.abs(points[i].x - xInViewBox);
-        if (dist < minDist) {
-          minDist = dist;
-          nearest = i;
-        }
-      }
-      setTooltip({ x: points[nearest].x, y: points[nearest].y, idx: nearest });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data],
-  );
-
-  const handleMouseLeave = useCallback(() => setTooltip(null), []);
 
   return (
     <Card className="overflow-hidden">

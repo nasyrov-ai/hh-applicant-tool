@@ -1,5 +1,5 @@
 import { createStaticSupabase } from "@/lib/supabase-static";
-import { formatDateTime, stateLabel, stateColor, formatNumber, stateBadgeVariant } from "@/lib/utils";
+import { formatDateTime, stateLabel, formatNumber, stateBadgeVariant } from "@/lib/utils";
 import type { RecentActivity } from "@/lib/types";
 import { KpiCard } from "@/components/kpi-card";
 import { PageHeader } from "@/components/page-header";
@@ -101,7 +101,7 @@ export default async function OverviewPage() {
   let stats;
   try {
     stats = await getStats(supabase);
-  } catch (e) {
+  } catch (_e) {
     return (
       <div className="animate-fade-in">
         <PageHeader title="Обзор" description="Общая статистика по откликам и вакансиям" />
