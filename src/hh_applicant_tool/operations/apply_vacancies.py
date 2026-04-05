@@ -381,12 +381,10 @@ class Operation(BaseOperation):
                 seen_employers=seen_employers,
             )
 
-        # Синхронизация откликов
-        # for neg in self.tool.get_negotiations():
-        #     try:
-        #         self.tool.storage.negotiations.save(neg)
-        #     except RepositoryError as e:
-        #         logger.warning(e)
+        # Синхронизация откликов в SQLite для дашборда
+        # (get_negotiations автоматически сохраняет в БД)
+        for _ in self.tool.get_negotiations():
+            pass
 
         logger.info("Отклики на вакансии разосланы!")
 

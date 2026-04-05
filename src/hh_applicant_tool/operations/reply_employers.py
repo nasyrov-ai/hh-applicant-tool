@@ -177,11 +177,6 @@ class Operation(BaseOperation):
                 logger.info("Операция отменена пользователем")
                 break
             try:
-                # try:
-                #     self.tool.storage.negotiations.save(negotiation)
-                # except RepositoryError as e:
-                #     logger.exception(e)
-
                 resume_obj = negotiation.get("resume") or {}
                 if not resume_obj or not (resume := resume_map.get(resume_obj.get("id"))):
                     continue

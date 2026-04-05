@@ -116,17 +116,6 @@ class Operation(BaseOperation):
             if not vacancy:
                 continue
 
-            # Если работодателя блокируют, то он превращается в null
-            # ХХ позволяет скрывать компанию, когда id нет, а вместо имени "Крупная российская компания"
-            # sqlite3.IntegrityError: NOT NULL constraint failed: negotiations.employer_id
-            # try:
-            #     storage.negotiations.save(negotiation)
-            # except RepositoryError as e:
-            #     logger.exception(e)
-
-            # print(negotiation)
-            # raise RuntimeError()
-
             if self.args.older_than:
                 updated_at = parse_api_datetime(negotiation["updated_at"])
                 # А хз какую временную зону сайт возвращает

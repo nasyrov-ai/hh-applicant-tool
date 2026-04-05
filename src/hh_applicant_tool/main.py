@@ -22,6 +22,7 @@ import urllib3
 from . import ai, api, utils
 from .api.client import HH_BASE_URL
 from .storage import StorageFacade
+from .storage.repositories.errors import RepositoryError
 from .utils.cookiejar import HHOnlyCookieJar
 from .utils.log import setup_logger
 from .utils.mixins import MegaTool
@@ -273,7 +274,12 @@ class HHApplicantTool(MegaTool):
             if not items:
                 break
 
-            yield from items
+            for item in items:
+                try:
+                    self.storage.negotiations.save(item)
+                except RepositoryError as e:
+                    logger.warning(e)
+                yield item
 
             if page + 1 >= r.get("pages", 0):
                 break

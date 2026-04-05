@@ -40,14 +40,12 @@ async function getStats(supabase: ReturnType<typeof createStaticSupabase>) {
     invitationsResult,
     discardsResult,
     totalVacanciesResult,
-    recentNegotiationsResult,
     recentActivityResult,
   ] = await Promise.all([
     db.from("negotiations").select("*", { count: "exact", head: true }),
     db.from("negotiations").select("*", { count: "exact", head: true }).or("state.eq.interview,state.like.invitation%"),
     db.from("negotiations").select("*", { count: "exact", head: true }).eq("state", "discard"),
     db.from("vacancies").select("*", { count: "exact", head: true }),
-    db.from("negotiations").select("created_at").gte("created_at", thirtyDaysAgo.toISOString()).order("created_at", { ascending: true }),
     db.from("negotiations").select("id, state, vacancy_id, updated_at").order("updated_at", { ascending: false }).limit(10),
   ]);
 
@@ -56,13 +54,29 @@ async function getStats(supabase: ReturnType<typeof createStaticSupabase>) {
     invitationsResult,
     discardsResult,
     totalVacanciesResult,
-    recentNegotiationsResult,
     recentActivityResult,
   ].filter((r) => r.error);
 
   if (errors.length > 0) {
     const message = errors.map((r) => r.error?.message).join("; ");
     throw new Error(`Supabase error: ${message}`);
+  }
+
+  // Fetch chart data with pagination (Supabase default limit = 1000)
+  const chartRows: { created_at: string }[] = [];
+  const PAGE = 1000;
+  let offset = 0;
+  while (true) {
+    const { data } = await db
+      .from("negotiations")
+      .select("created_at")
+      .gte("created_at", thirtyDaysAgo.toISOString())
+      .order("created_at", { ascending: true })
+      .range(offset, offset + PAGE - 1);
+    const rows = (data ?? []) as { created_at: string }[];
+    chartRows.push(...rows);
+    if (rows.length < PAGE) break;
+    offset += PAGE;
   }
 
   function dayKey(d: Date): string {
@@ -72,7 +86,7 @@ async function getStats(supabase: ReturnType<typeof createStaticSupabase>) {
   }
 
   const byDay: Record<string, number> = {};
-  (recentNegotiationsResult.data || []).forEach((n) => {
+  chartRows.forEach((n) => {
     const key = dayKey(new Date(n.created_at));
     byDay[key] = (byDay[key] || 0) + 1;
   });
