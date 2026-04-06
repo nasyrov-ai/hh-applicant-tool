@@ -9,35 +9,71 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createBrowserSupabase } from "@/lib/supabase-client";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError("Пароли не совпадают");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Пароль должен быть не менее 6 символов");
+      return;
+    }
+
     setLoading(true);
 
     const supabase = createBrowserSupabase();
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { error: authError } = await supabase.auth.signUp({
       email,
       password,
     });
 
     if (authError) {
-      setError(
-        authError.message === "Invalid login credentials"
-          ? "Неверный email или пароль"
-          : authError.message
-      );
+      setError(authError.message);
       setLoading(false);
     } else {
-      router.push("/");
-      router.refresh();
+      // If email confirmation is disabled, redirect to dashboard
+      // Otherwise show success message
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        router.push("/");
+        router.refresh();
+      } else {
+        setSuccess(true);
+        setLoading(false);
+      }
     }
+  }
+
+  if (success) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background bg-grid overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.08),transparent_70%)]" />
+        <div className="animate-scale-in relative w-full max-w-sm z-10">
+          <div className="card-gradient-border rounded-2xl border border-border bg-card/80 p-8 shadow-xl shadow-black/20 backdrop-blur-xl text-center">
+            <h2 className="text-lg font-bold mb-2">Проверьте почту</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Мы отправили ссылку для подтверждения на {email}
+            </p>
+            <Link href="/login" className="text-primary hover:underline text-sm">
+              Вернуться ко входу
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -53,7 +89,7 @@ export default function LoginPage() {
                 <span className="text-gradient-gold">1.618</span>
                 <span className="text-muted-foreground ml-2 font-normal text-base">worksearch</span>
               </h1>
-              <p className="mt-1 text-sm text-muted-foreground">Войдите в аккаунт</p>
+              <p className="mt-1 text-sm text-muted-foreground">Создайте аккаунт</p>
             </div>
           </div>
 
@@ -72,7 +108,15 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Пароль"
-              autoComplete="current-password"
+              autoComplete="new-password"
+              className="h-11"
+            />
+            <Input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Подтвердите пароль"
+              autoComplete="new-password"
               className="h-11"
             />
 
@@ -82,14 +126,14 @@ export default function LoginPage() {
 
             <Button type="submit" className="h-11 w-full bg-primary text-primary-foreground hover:bg-[#F5D061] hover:shadow-[0_8px_40px_rgba(212,175,55,0.3)] transition-all duration-300" disabled={loading}>
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Войти
+              Зарегистрироваться
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Нет аккаунта?{" "}
-            <Link href="/signup" className="text-primary hover:underline">
-              Зарегистрироваться
+            Уже есть аккаунт?{" "}
+            <Link href="/login" className="text-primary hover:underline">
+              Войти
             </Link>
           </p>
         </div>

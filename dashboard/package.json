@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "next dev & (cd .. && set -a && source .env.worker && set +a && .venv/bin/python -m hh_applicant_tool.worker) & wait",
+    "dev": "next dev -p 3847 & (cd .. && set -a && source .env.worker && set +a && .venv/bin/python -m hh_applicant_tool.worker) & wait",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3847",
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test"

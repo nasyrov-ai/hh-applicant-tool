@@ -1,29 +1,27 @@
-import { cookies } from "next/headers";
-import { timingSafeEqual } from "crypto";
-import { makeAuthToken } from "./auth-token";
+import { createServerSupabase } from "./supabase-server";
 
-export { makeAuthToken };
+export async function assertAuth(): Promise<void> {
+  const supabase = await createServerSupabase();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
 
-function safeCompare(a: string, b: string): boolean {
-  try {
-    return timingSafeEqual(Buffer.from(a), Buffer.from(b));
-  } catch {
-    return false;
+  if (error || !user) {
+    throw new Error("Unauthorized");
   }
 }
 
-export async function assertAuth(): Promise<void> {
-  const secret = process.env.DASHBOARD_SECRET;
-  if (!secret) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("Unauthorized: DASHBOARD_SECRET is not configured");
-    }
-    return; // dev mode only
-  }
-  const cookieStore = await cookies();
-  const token = cookieStore.get("hh_dashboard_auth")?.value;
-  const expected = await makeAuthToken(secret);
-  if (!token || !safeCompare(token, expected)) {
+export async function getAuthUserId(): Promise<string> {
+  const supabase = await createServerSupabase();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
     throw new Error("Unauthorized");
   }
+
+  return user.id;
 }

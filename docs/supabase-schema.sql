@@ -11,7 +11,9 @@
 --   - No foreign keys between data tables (vacancies, negotiations, employers)
 --     by design. The worker syncs data from hh.ru API and references are
 --     resolved at the application level.
---   - RLS is enabled on every table with anon full-access policies.
+--   - All data tables have nullable user_id for multi-tenant SaaS support.
+--   - RLS is enabled on every table. Anon policies kept for backward
+--     compatibility; authenticated policies will be added in Phase 2.
 --   - Realtime is enabled for command_queue, execution_logs, worker_status.
 -- =============================================================================
 
@@ -31,6 +33,7 @@ CREATE TABLE IF NOT EXISTS employers (
     area_id INTEGER,
     area_name TEXT,
     alternate_url TEXT,
+    user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -53,7 +56,8 @@ CREATE TABLE IF NOT EXISTS vacancies (
     remote BOOLEAN,
     experience TEXT,
     professional_roles JSONB,
-    alternate_url TEXT
+    alternate_url TEXT,
+    user_id UUID REFERENCES auth.users(id)
 );
 
 -- ---------------------------------------------------------------------------
@@ -75,6 +79,7 @@ CREATE TABLE IF NOT EXISTS vacancy_contacts (
     name TEXT,
     email TEXT,
     phone_numbers TEXT NOT NULL,
+    user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     UNIQUE (vacancy_id, email)
@@ -90,6 +95,7 @@ CREATE TABLE IF NOT EXISTS negotiations (
     employer_id BIGINT,
     chat_id BIGINT NOT NULL,
     resume_id TEXT,
+    user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -107,6 +113,7 @@ CREATE TABLE IF NOT EXISTS resumes (
     can_publish_or_update BOOLEAN,
     total_views INTEGER DEFAULT 0,
     new_views INTEGER DEFAULT 0,
+    user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -126,6 +133,7 @@ CREATE TABLE IF NOT EXISTS employer_sites (
     powered_by TEXT,
     emails TEXT,
     subdomains TEXT,
+    user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     UNIQUE (employer_id, site_url)
@@ -137,7 +145,8 @@ CREATE TABLE IF NOT EXISTS employer_sites (
 CREATE TABLE IF NOT EXISTS sync_log (
     table_name TEXT PRIMARY KEY,
     last_synced_at TIMESTAMPTZ,
-    rows_synced INTEGER DEFAULT 0
+    rows_synced INTEGER DEFAULT 0,
+    user_id UUID REFERENCES auth.users(id)
 );
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -158,6 +167,7 @@ CREATE TABLE IF NOT EXISTS command_queue (
     retry_count INTEGER DEFAULT 0,
     max_retries INTEGER DEFAULT 0,
     started_at TIMESTAMPTZ,
+    user_id UUID REFERENCES auth.users(id),
     completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -185,6 +195,7 @@ CREATE INDEX IF NOT EXISTS idx_execution_logs_command
 CREATE TABLE IF NOT EXISTS worker_config (
     key TEXT PRIMARY KEY,
     value JSONB,
+    user_id UUID REFERENCES auth.users(id),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -211,6 +222,7 @@ CREATE TABLE IF NOT EXISTS cron_schedules (
     enabled BOOLEAN DEFAULT true,
     last_run_at TIMESTAMPTZ,
     next_run_at TIMESTAMPTZ,
+    user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -221,6 +233,7 @@ CREATE TABLE IF NOT EXISTS blacklist (
     employer_id BIGINT PRIMARY KEY,
     employer_name TEXT,
     reason TEXT,
+    user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -236,6 +249,7 @@ CREATE TABLE IF NOT EXISTS application_messages (
     message_text TEXT NOT NULL,
     message_type TEXT NOT NULL DEFAULT 'template',
     ai_model TEXT,
+    user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -253,12 +267,63 @@ CREATE TABLE IF NOT EXISTS employer_watchlist (
     employer_id BIGINT PRIMARY KEY,
     employer_name TEXT NOT NULL,
     notify BOOLEAN DEFAULT true,
+    user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- 3. INDEXES ON updated_at (for data tables)
+-- 2b. SAAS TABLES (multi-tenant support)
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+-- ---------------------------------------------------------------------------
+-- user_tokens (HH OAuth tokens per user)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS user_tokens (
+    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    access_token TEXT NOT NULL,
+    refresh_token TEXT,
+    access_expires_at BIGINT,
+    client_id TEXT,
+    client_secret TEXT,
+    hh_user_id TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ---------------------------------------------------------------------------
+-- user_profiles (plan, settings per user)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS user_profiles (
+    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    display_name TEXT,
+    plan TEXT DEFAULT 'starter',
+    plan_expires_at TIMESTAMPTZ,
+    settings JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- 3. INDEXES
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+-- Indexes on user_id (for multi-tenant filtering)
+
+CREATE INDEX IF NOT EXISTS idx_employers_user ON employers(user_id);
+CREATE INDEX IF NOT EXISTS idx_vacancies_user ON vacancies(user_id);
+CREATE INDEX IF NOT EXISTS idx_vacancy_contacts_user ON vacancy_contacts(user_id);
+CREATE INDEX IF NOT EXISTS idx_negotiations_user ON negotiations(user_id);
+CREATE INDEX IF NOT EXISTS idx_resumes_user ON resumes(user_id);
+CREATE INDEX IF NOT EXISTS idx_employer_sites_user ON employer_sites(user_id);
+CREATE INDEX IF NOT EXISTS idx_application_messages_user ON application_messages(user_id);
+CREATE INDEX IF NOT EXISTS idx_employer_watchlist_user ON employer_watchlist(user_id);
+CREATE INDEX IF NOT EXISTS idx_blacklist_user ON blacklist(user_id);
+CREATE INDEX IF NOT EXISTS idx_sync_log_user ON sync_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_command_queue_user ON command_queue(user_id);
+CREATE INDEX IF NOT EXISTS idx_cron_schedules_user ON cron_schedules(user_id);
+CREATE INDEX IF NOT EXISTS idx_worker_config_user ON worker_config(user_id);
+
+-- Indexes on updated_at (for data tables)
 
 CREATE INDEX IF NOT EXISTS idx_employers_updated_at
     ON employers(updated_at);
@@ -300,6 +365,8 @@ ALTER TABLE cron_schedules     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blacklist               ENABLE ROW LEVEL SECURITY;
 ALTER TABLE application_messages    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE employer_watchlist      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_tokens             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles           ENABLE ROW LEVEL SECURITY;
 
 -- Read-only tables: anon can SELECT but not modify
 CREATE POLICY "anon_read" ON employers          FOR SELECT TO anon USING (true);
@@ -326,6 +393,15 @@ CREATE POLICY "anon_read"  ON cron_schedules   FOR SELECT TO anon USING (true);
 CREATE POLICY "anon_write" ON cron_schedules   FOR INSERT TO anon WITH CHECK (true);
 CREATE POLICY "anon_update" ON cron_schedules  FOR UPDATE TO anon USING (true) WITH CHECK (true);
 CREATE POLICY "anon_delete" ON cron_schedules  FOR DELETE TO anon USING (true);
+
+-- SaaS tables: authenticated users can access their own rows only
+CREATE POLICY "user_select_own" ON user_tokens   FOR SELECT TO authenticated USING (user_id = auth.uid());
+CREATE POLICY "user_insert_own" ON user_tokens   FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+CREATE POLICY "user_update_own" ON user_tokens   FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "user_select_own" ON user_profiles FOR SELECT TO authenticated USING (user_id = auth.uid());
+CREATE POLICY "user_insert_own" ON user_profiles FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+CREATE POLICY "user_update_own" ON user_profiles FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
 -- service_role bypasses RLS, so worker writes work without extra policies
 
@@ -383,4 +459,13 @@ CREATE TRIGGER trg_worker_config_updated_at
 
 CREATE TRIGGER trg_worker_status_updated_at
     BEFORE UPDATE ON worker_status
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- SaaS tables
+CREATE TRIGGER trg_user_tokens_updated_at
+    BEFORE UPDATE ON user_tokens
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trg_user_profiles_updated_at
+    BEFORE UPDATE ON user_profiles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();

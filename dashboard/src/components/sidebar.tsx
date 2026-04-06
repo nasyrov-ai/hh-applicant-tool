@@ -2,9 +2,9 @@
 
 import { useState, useEffect, lazy, Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Menu } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { createBrowserSupabase } from "@/lib/supabase-client";
 
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -76,6 +77,29 @@ function StatusIndicatorsFallback() {
   );
 }
 
+function LogoutButton() {
+  const router = useRouter();
+
+  async function handleLogout() {
+    const supabase = createBrowserSupabase();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+      onClick={handleLogout}
+      title="Выйти"
+    >
+      <LogOut className="h-4 w-4" />
+    </Button>
+  );
+}
+
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
@@ -93,7 +117,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <Suspense fallback={<StatusIndicatorsFallback />}>
           <LazyStatusIndicators />
         </Suspense>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <LogoutButton />
+        </div>
       </div>
     </div>
   );

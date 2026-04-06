@@ -8,6 +8,7 @@ export interface Database {
           vacancy_id: number;
           employer_id: number | null;
           resume_id: string | null;
+          user_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -17,6 +18,7 @@ export interface Database {
           vacancy_id: number;
           employer_id?: number | null;
           resume_id?: string | null;
+          user_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -26,6 +28,7 @@ export interface Database {
           vacancy_id?: number;
           employer_id?: number | null;
           resume_id?: string | null;
+          user_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -42,6 +45,7 @@ export interface Database {
           currency: string | null;
           experience: string | null;
           published_at: string | null;
+          user_id: string | null;
           created_at: string;
           updated_at: string;
           alternate_url: string | null;
@@ -56,6 +60,7 @@ export interface Database {
           currency?: string | null;
           experience?: string | null;
           published_at?: string | null;
+          user_id?: string | null;
           created_at?: string;
           updated_at?: string;
           alternate_url?: string | null;
@@ -70,6 +75,7 @@ export interface Database {
           currency?: string | null;
           experience?: string | null;
           published_at?: string | null;
+          user_id?: string | null;
           created_at?: string;
           updated_at?: string;
           alternate_url?: string | null;
@@ -84,6 +90,7 @@ export interface Database {
           area_name: string | null;
           site_url: string | null;
           alternate_url: string | null;
+          user_id: string | null;
           updated_at: string;
         };
         Insert: {
@@ -93,6 +100,7 @@ export interface Database {
           area_name?: string | null;
           site_url?: string | null;
           alternate_url?: string | null;
+          user_id?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -102,6 +110,7 @@ export interface Database {
           area_name?: string | null;
           site_url?: string | null;
           alternate_url?: string | null;
+          user_id?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -114,6 +123,7 @@ export interface Database {
           generator: string | null;
           powered_by: string | null;
           server_name: string | null;
+          user_id: string | null;
         };
         Insert: {
           employer_id: number;
@@ -122,6 +132,7 @@ export interface Database {
           generator?: string | null;
           powered_by?: string | null;
           server_name?: string | null;
+          user_id?: string | null;
         };
         Update: {
           employer_id?: number;
@@ -130,6 +141,7 @@ export interface Database {
           generator?: string | null;
           powered_by?: string | null;
           server_name?: string | null;
+          user_id?: string | null;
         };
         Relationships: [];
       };
@@ -143,6 +155,7 @@ export interface Database {
           can_publish_or_update: boolean;
           total_views: number;
           new_views: number;
+          user_id: string | null;
           updated_at: string;
         };
         Insert: {
@@ -154,6 +167,7 @@ export interface Database {
           can_publish_or_update?: boolean;
           total_views?: number;
           new_views?: number;
+          user_id?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -165,6 +179,7 @@ export interface Database {
           can_publish_or_update?: boolean;
           total_views?: number;
           new_views?: number;
+          user_id?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -175,6 +190,7 @@ export interface Database {
           command: string;
           args: Record<string, unknown> | null;
           status: string;
+          user_id: string | null;
           created_at: string;
           started_at: string | null;
           completed_at: string | null;
@@ -185,6 +201,7 @@ export interface Database {
           command: string;
           args?: Record<string, unknown> | null;
           status?: string;
+          user_id?: string | null;
           created_at?: string;
           started_at?: string | null;
           completed_at?: string | null;
@@ -195,6 +212,7 @@ export interface Database {
           command?: string;
           args?: Record<string, unknown> | null;
           status?: string;
+          user_id?: string | null;
           created_at?: string;
           started_at?: string | null;
           completed_at?: string | null;
@@ -230,14 +248,17 @@ export interface Database {
         Row: {
           key: string;
           value: unknown;
+          user_id: string | null;
         };
         Insert: {
           key: string;
           value: unknown;
+          user_id?: string | null;
         };
         Update: {
           key?: string;
           value?: unknown;
+          user_id?: string | null;
         };
         Relationships: [];
       };
@@ -270,18 +291,21 @@ export interface Database {
           employer_id: number;
           employer_name: string;
           reason: string | null;
+          user_id: string | null;
           created_at: string;
         };
         Insert: {
           employer_id: number;
           employer_name: string;
           reason?: string | null;
+          user_id?: string | null;
           created_at?: string;
         };
         Update: {
           employer_id?: number;
           employer_name?: string;
           reason?: string | null;
+          user_id?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -296,6 +320,7 @@ export interface Database {
           enabled: boolean;
           last_run_at: string | null;
           next_run_at: string | null;
+          user_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -307,6 +332,7 @@ export interface Database {
           enabled?: boolean;
           last_run_at?: string | null;
           next_run_at?: string | null;
+          user_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -318,6 +344,7 @@ export interface Database {
           enabled?: boolean;
           last_run_at?: string | null;
           next_run_at?: string | null;
+          user_id?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -327,18 +354,21 @@ export interface Database {
           id: number;
           type: string;
           synced_count: number;
+          user_id: string | null;
           created_at: string;
         };
         Insert: {
           id?: number;
           type: string;
           synced_count?: number;
+          user_id?: string | null;
           created_at?: string;
         };
         Update: {
           id?: number;
           type?: string;
           synced_count?: number;
+          user_id?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -349,6 +379,7 @@ export interface Database {
           name: string | null;
           email: string | null;
           phones: string | null;
+          user_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -356,6 +387,7 @@ export interface Database {
           name?: string | null;
           email?: string | null;
           phones?: string | null;
+          user_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -363,6 +395,7 @@ export interface Database {
           name?: string | null;
           email?: string | null;
           phones?: string | null;
+          user_id?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -372,18 +405,21 @@ export interface Database {
           employer_id: number;
           employer_name: string;
           notify: boolean;
+          user_id: string | null;
           created_at: string;
         };
         Insert: {
           employer_id: number;
           employer_name: string;
           notify?: boolean;
+          user_id?: string | null;
           created_at?: string;
         };
         Update: {
           employer_id?: number;
           employer_name?: string;
           notify?: boolean;
+          user_id?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -398,6 +434,7 @@ export interface Database {
           message_text: string;
           message_type: string;
           ai_model: string | null;
+          user_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -409,6 +446,7 @@ export interface Database {
           message_text: string;
           message_type?: string;
           ai_model?: string | null;
+          user_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -420,7 +458,74 @@ export interface Database {
           message_text?: string;
           message_type?: string;
           ai_model?: string | null;
+          user_id?: string | null;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      user_tokens: {
+        Row: {
+          user_id: string;
+          access_token: string;
+          refresh_token: string | null;
+          access_expires_at: number | null;
+          client_id: string | null;
+          client_secret: string | null;
+          hh_user_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          access_token: string;
+          refresh_token?: string | null;
+          access_expires_at?: number | null;
+          client_id?: string | null;
+          client_secret?: string | null;
+          hh_user_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          access_token?: string;
+          refresh_token?: string | null;
+          access_expires_at?: number | null;
+          client_id?: string | null;
+          client_secret?: string | null;
+          hh_user_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_profiles: {
+        Row: {
+          user_id: string;
+          display_name: string | null;
+          plan: string;
+          plan_expires_at: string | null;
+          settings: Record<string, unknown>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          display_name?: string | null;
+          plan?: string;
+          plan_expires_at?: string | null;
+          settings?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          display_name?: string | null;
+          plan?: string;
+          plan_expires_at?: string | null;
+          settings?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
